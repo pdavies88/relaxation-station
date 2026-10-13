@@ -36,7 +36,7 @@ TTS_DIR = ROOT / ".tts"
 TTS_CACHE = TTS_DIR / "cache"
 
 SR = 44100
-VOICE = "af_heart"
+VOICE = "af_bella"
 VOICE_SPEED = 0.82
 
 
@@ -191,8 +191,8 @@ def sound_thunderstorm(rng, n):
 
 
 def sound_ocean(rng, n):
-    base = lowpass(0.6 * brown(rng, n) / 30 + pink(rng, n), 1400)
-    foam = bandpass(white(rng, n), 2500, 9000)
+    """Low, rolling surf. Kept below about 1.5 kHz so there is no hiss; the wash of each wave
+    is a gentle mid-range swell rather than bright noise."""
     swell = np.zeros(n)
     t = 0.0
     while t < n / SR:
@@ -202,12 +202,17 @@ def sound_ocean(rng, n):
         place(swell, wave, int(t * SR))
         t += period
     swell = 0.25 + swell / swell.max()
-    crash = np.maximum(0, np.gradient(signal.savgol_filter(swell, 2001, 2))) * SR
-    crash = lowpass(crash / (crash.max() + 1e-9), 3)
-    mono_l = base * swell + 0.35 * foam * crash
-    pan = 0.5 + 0.2 * np.sin(2 * np.pi * np.arange(n) / SR / 23)
-    other = lowpass(pink(rng, n), 1400) * swell + 0.35 * bandpass(white(rng, n), 2500, 9000) * crash
-    return np.stack([mono_l * (1 - pan) + other * pan * 0.6, mono_l * pan + other * (1 - pan) * 0.6], axis=1)
+    wash = np.maximum(0, np.gradient(signal.savgol_filter(swell, 2001, 2))) * SR
+    wash = lowpass(wash / (wash.max() + 1e-9), 3)
+
+    def side(r):
+        body = lowpass(brown(r, n) / 20 + 0.5 * pink(r, n), 700, order=4)
+        surf = bandpass(pink(r, n), 250, 1400, order=2)
+        return body * swell + 0.45 * surf * (0.3 * swell + wash)
+
+    left, right = side(rng), side(rng)
+    pan = 0.5 + 0.15 * np.sin(2 * np.pi * np.arange(n) / SR / 23)
+    return np.stack([left * (1 - pan) + right * pan * 0.5, right * pan + left * (1 - pan) * 0.5], axis=1)
 
 
 def sound_stream(rng, n):

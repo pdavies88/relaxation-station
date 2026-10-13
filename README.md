@@ -39,7 +39,7 @@ All audio is generated on a Mac and committed to `assets/audio/`. The app never 
 - **Catalog:** `content/catalog.json` lists every category, meditation and soundscape. The app and the generator both read it.
 - **Scripts:** `content/meditations.txt` holds the meditation scripts. Lines are spoken, `~` adds a longer pause and `[N]` adds an exact pause of N seconds.
 - **Generator:** `audio-tools/generate_audio.py`:
-  - speaks each line with the open-source Kokoro text-to-speech model (Apache 2.0, voice `af_heart`)
+  - speaks each line with the open-source Kokoro text-to-speech model (Apache 2.0, voice `af_bella`, "Bella")
   - spreads the pauses so every session is exactly 3, 5 or 10 minutes
   - mixes in a soft drone and a singing bowl at the start and end
   - synthesizes the soundscapes from filtered noise and tones, and crossfades each one's end into its start so it loops seamlessly
