@@ -595,28 +595,48 @@ def sound_car(rng, n):
     return np.stack([lowpass(out[:, 0], 1500), lowpass(out[:, 1], 1500)], axis=1)
 
 
-SHUSH_PERIOD = 2.4  # seconds per "shhh" and pause, about 25 a minute
+SHUSH_PERIOD = 3.6  # seconds per "shhhh" and the breath in before the next one
+SHUSH_SECONDS = 3.0
+
+
+def shush_breath(rng, seconds: float) -> np.ndarray:
+    """One long "shhhh". Real /sh/ is breath noise with a broad peak near 3 kHz and very little
+    below 1 kHz. The peak drifts down a little as the breath runs out, and the loudness rises
+    and falls slowly with a slight flutter, so it sounds like a person and not a rattle."""
+    nper, hop = 2048, 512
+    n = int(SR * seconds)
+    frames = n // hop + 2
+    f = np.fft.rfftfreq(nper, 1 / SR)
+    t = np.arange(frames) * hop / SR
+    peak = 3000 - 450 * np.clip(t / seconds, 0, 1)
+    logf = np.log2(np.maximum(f, 20))[:, None]
+    shape = np.exp(-0.5 * ((logf - np.log2(peak)[None, :]) / 0.55) ** 2)
+    shape *= np.clip((f[:, None] - 800) / 1200, 0, 1)
+    spectrum = shape * np.exp(2j * np.pi * rng.random(shape.shape))
+    _, x = signal.istft(spectrum, SR, nperseg=nper, noverlap=nper - hop)
+    x = np.real(x[:n])
+    tt = np.arange(len(x)) / SR
+    rise = 0.5 - 0.5 * np.cos(np.pi * np.clip(tt / 0.6, 0, 1))
+    fall = 0.5 - 0.5 * np.cos(np.pi * np.clip((seconds - tt) / 1.2, 0, 1))
+    flutter = 1 + 0.05 * np.sin(2 * np.pi * rng.uniform(4, 6) * tt + rng.uniform(0, 6))
+    return x * rise * fall * flutter
 
 
 def sound_shush(rng, n):
-    """A soft, steady "shhh... shhh..." like a parent settling a child, over a quiet low whoosh.
-    The loop holds a whole number of shushes, so it repeats without a seam."""
+    """A soft, steady "shhhh... shhhh..." like a parent settling a child, over a faint low
+    whoosh, with a little room echo. The loop holds a whole number of shushes."""
     count = int(round(n / SR / SHUSH_PERIOD))
     n = int(round(count * SHUSH_PERIOD * SR))
     voice = np.zeros(n)
-    length = int(SR * 1.7)
-    st = np.arange(length) / SR
-    # Breath shape: a gentle rise, a steady middle and a slow fade.
-    shape = np.minimum(1, st / 0.35) * np.clip((1.7 - st) / 0.7, 0, 1)
     for i in range(count):
-        noise = white(rng, length)
-        sh = bandpass(noise, 1800, 4500) + 0.3 * bandpass(noise, 900, 1800)
-        sh = lowpass(sh, 5000) * shape * rng.uniform(0.85, 1.0)
-        place_wrap(voice, sh, int((i * SHUSH_PERIOD + rng.uniform(-0.04, 0.04)) * SR) % n)
+        breath = shush_breath(rng, SHUSH_SECONDS * rng.uniform(0.95, 1.0)) * rng.uniform(0.85, 1.0)
+        place_wrap(voice, breath, int((i * SHUSH_PERIOD + rng.uniform(-0.05, 0.05)) * SR) % n)
     voice = voice / (np.sqrt(np.mean(voice ** 2)) + 1e-9)
-    bed = circular_filter(pink(rng, n), lambda x: lowpass(x, 500))
+    voice = circular_reverb(voice, rng, 0.5, 0.15)
+    voice = voice / (np.sqrt(np.mean(voice ** 2)) + 1e-9)
+    bed = circular_filter(pink(rng, n), lambda x: lowpass(x, 400))
     bed = bed / (np.sqrt(np.mean(bed ** 2)) + 1e-9)
-    mono = voice + 0.35 * bed
+    mono = voice + 0.12 * bed
     return np.stack([mono, mono], axis=1)
 
 
