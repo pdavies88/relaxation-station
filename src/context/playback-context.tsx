@@ -11,7 +11,8 @@ import { createContext, use, useEffect, useRef, useState, type ReactNode } from 
 import { Platform } from 'react-native';
 
 import { APP_NAME } from '@/constants/brand';
-import { audioFor, findMeditation, findSoundscape } from '@/content/catalog';
+import { audioFor, findMeditation, findSoundscape, NARRATOR_INFO, type Narrator } from '@/content/catalog';
+import { loadNarrator, saveNarrator } from '@/lib/narrator-storage';
 import { clampPosition } from '@/lib/time';
 
 export type TrackKind = 'meditation' | 'soundscape';
@@ -21,6 +22,8 @@ export type Track = {
   id: string;
   title: string;
   subtitle: string;
+  /** The voice a meditation is playing in. */
+  narrator?: Narrator;
 };
 
 type PlaybackContextValue = {
@@ -31,6 +34,9 @@ type PlaybackContextValue = {
   duration: number;
   /** True once a meditation has played to the end. */
   finished: boolean;
+  /** Voice used for meditations. A change applies to the next meditation you start. */
+  narrator: Narrator;
+  setNarrator: (narrator: Narrator) => void;
   play: (kind: TrackKind, id: string) => void;
   toggle: () => void;
   stop: () => void;
@@ -42,11 +48,17 @@ const PlaybackContext = createContext<PlaybackContextValue | null>(null);
 
 const SKIP_SECONDS = 15;
 
-function describe(kind: TrackKind, id: string): Track {
+function describe(kind: TrackKind, id: string, narrator: Narrator): Track {
   if (kind === 'meditation') {
     const meditation = findMeditation(id);
     if (!meditation) throw new Error(`Unknown meditation "${id}"`);
-    return { kind, id, title: meditation.title, subtitle: `${meditation.categoryTitle} · ${meditation.minutes} min` };
+    return {
+      kind,
+      id,
+      title: meditation.title,
+      subtitle: `${meditation.categoryTitle} · ${meditation.minutes} min · ${NARRATOR_INFO[narrator].label} voice`,
+      narrator,
+    };
   }
   const soundscape = findSoundscape(id);
   if (!soundscape) throw new Error(`Unknown soundscape "${id}"`);
@@ -83,6 +95,7 @@ export function PlaybackProvider({ children }: { children: ReactNode }) {
   const player = useAudioPlayer(null, { updateInterval: 500 });
   const status = useAudioPlayerStatus(player);
   const [track, setTrack] = useState<Track | null>(null);
+  const [narrator, setNarratorState] = useState<Narrator>(loadNarrator);
   const askedForNotifications = useRef(false);
 
   useEffect(() => {
@@ -128,12 +141,13 @@ export function PlaybackProvider({ children }: { children: ReactNode }) {
   };
 
   const play = (kind: TrackKind, id: string) => {
-    if (track?.kind === kind && track.id === id && !finished) {
+    const sameVoice = kind === 'soundscape' || track?.narrator === narrator;
+    if (track?.kind === kind && track.id === id && sameVoice && !finished) {
       player.play();
       return;
     }
-    const next = describe(kind, id);
-    player.replace(audioFor(kind, id));
+    const next = describe(kind, id, narrator);
+    player.replace(audioFor(kind, id, narrator));
     // Soundscapes repeat seamlessly until stopped. Meditations play once.
     setLooping(player, kind === 'soundscape');
     player.play();
@@ -147,6 +161,11 @@ export function PlaybackProvider({ children }: { children: ReactNode }) {
     position: status.currentTime,
     duration: status.duration,
     finished,
+    narrator,
+    setNarrator: (next) => {
+      setNarratorState(next);
+      saveNarrator(next);
+    },
     play,
     toggle: () => {
       if (!track) return;

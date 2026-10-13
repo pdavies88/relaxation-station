@@ -2,7 +2,8 @@
 
     .tts/venv/bin/python audio-tools/generate_audio.py            # everything
     .tts/venv/bin/python audio-tools/generate_audio.py sounds     # soundscapes only
-    .tts/venv/bin/python audio-tools/generate_audio.py meditations [id ...]
+    .tts/venv/bin/python audio-tools/generate_audio.py meditations [bella|george] [id ...]
+    .tts/venv/bin/python audio-tools/generate_audio.py sounds [id ...]
 
 Soundscapes are synthesized from filtered noise and tones, and made to loop seamlessly.
 Meditations are spoken by the Kokoro open-source voice model (Apache 2.0), timed to an exact
@@ -36,7 +37,11 @@ TTS_DIR = ROOT / ".tts"
 TTS_CACHE = TTS_DIR / "cache"
 
 SR = 44100
-VOICE = "af_bella"
+# Narrators the user can choose between. Kokoro voice id and language for each.
+VOICES = {
+    "bella": {"voice": "af_bella", "lang": "en-us"},
+    "george": {"voice": "bm_george", "lang": "en-gb"},
+}
 VOICE_SPEED = 0.82
 
 
@@ -95,6 +100,27 @@ def place(dst: np.ndarray, src: np.ndarray, start: int) -> None:
     end = min(len(dst), start + len(src))
     if start < len(dst):
         dst[start:end] += src[: end - start]
+
+
+def place_wrap(dst: np.ndarray, src: np.ndarray, start: int) -> None:
+    """Adds src into dst, wrapping anything past the end back to the start (for seamless loops)."""
+    n = len(dst)
+    idx = (start + np.arange(len(src))) % n
+    np.add.at(dst, idx, src)
+
+
+def circular_reverb(x: np.ndarray, rng, seconds: float = 2.5, wet: float = 0.35) -> np.ndarray:
+    """A simple room reverb (decaying noise impulse) applied as a circular convolution, so the
+    reverb tail at the end of a loop rings into its start instead of being cut off."""
+    n = len(x)
+    length = int(SR * seconds)
+    ir = rng.standard_normal(length) * np.exp(-np.arange(length) / (SR * seconds / 6))
+    ir = lowpass(ir, 5000)
+    ir /= np.sqrt(np.sum(ir ** 2)) + 1e-12
+    kernel = np.zeros(n)
+    kernel[:length] = ir
+    tail = np.real(np.fft.irfft(np.fft.rfft(x) * np.fft.rfft(kernel), n))
+    return (1 - wet) * x + wet * tail
 
 
 def stereo(rng, mono_fn, n: int, width: float = 0.5) -> np.ndarray:
@@ -163,31 +189,41 @@ def droplets(rng, n, per_second, lo, hi, decay_ms, gain=1.0):
 
 def sound_rain(rng, n):
     def mono(r, k):
-        hiss = bandpass(pink(r, k), 500, 9000)
-        drops = droplets(r, k, 220, 1800, 6500, 14, gain=3.0)
+        hiss = bandpass(pink(r, k), 400, 5000)
+        drops = droplets(r, k, 160, 1200, 4500, 16, gain=2.5)
         swell = 0.85 + 0.15 * smooth_noise(r, k, 0.1)
-        return (hiss + 0.6 * drops) * swell
+        return lowpass(hiss + 0.5 * drops, 6000) * swell
     return stereo(rng, mono, n, 0.7)
 
 
 def sound_thunderstorm(rng, n):
+    """Heavy rain with thunderclaps: a sharp crack, then a long rolling rumble."""
     def mono(r, k):
-        hiss = bandpass(pink(r, k), 250, 7000)
-        drops = droplets(r, k, 420, 1200, 5000, 18, gain=3.0)
-        low = lowpass(brown(r, k), 500) * 0.5
-        return hiss + 0.5 * drops + low
+        hiss = bandpass(pink(r, k), 200, 6000)
+        drops = droplets(r, k, 650, 900, 4500, 20, gain=3.0)
+        body = lowpass(brown(r, k), 600) * 0.6
+        swell = 0.8 + 0.2 * smooth_noise(r, k, 0.15)
+        return (hiss + 0.5 * drops + body) * swell
     rain = stereo(rng, mono, n, 0.7)
-    thunder = np.zeros(n)
-    usable = n - int(SR * (CROSSFADE_SECONDS + 12))
-    for start in np.sort(rng.integers(int(SR * 6), usable, 4)):
-        length = int(SR * rng.uniform(7, 11))
-        rumble = lowpass(brown(rng, length), rng.uniform(90, 180), order=4)
-        rumble *= envelope(length, rng.uniform(0.2, 0.8), rng.uniform(1.8, 3.2))
-        rumble *= 0.6 + 0.4 * smooth_noise(rng, length, 3)
-        place(thunder, rumble / (np.max(np.abs(rumble)) + 1e-9), int(start))
     rain = rain / (np.sqrt(np.mean(rain ** 2)) + 1e-9)
-    pan = np.stack([thunder * 0.9, thunder * 1.1], axis=1)
-    return rain + 2.2 * pan
+
+    thunder = np.zeros((n, 2))
+    usable = n - int(SR * (CROSSFADE_SECONDS + 14))
+    for start in np.sort(rng.choice(np.arange(int(SR * 4), usable, SR * 15), 5, replace=False)):
+        start = int(start + rng.uniform(0, 6) * SR)
+        crack_len = int(SR * rng.uniform(0.25, 0.5))
+        crack = highpass(white(rng, crack_len), 300) * np.exp(-np.arange(crack_len) / (SR * 0.06))
+        crack = lowpass(crack, 5000)
+        rumble_len = int(SR * rng.uniform(7, 11))
+        rumble = lowpass(brown(rng, rumble_len), rng.uniform(110, 200), order=4)
+        rumble *= envelope(rumble_len, 0.15, rng.uniform(2.2, 3.5)) * (0.6 + 0.4 * smooth_noise(rng, rumble_len, 4))
+        clap = np.zeros(rumble_len)
+        clap[:crack_len] += crack / (np.max(np.abs(crack)) + 1e-9) * 0.9
+        clap += rumble / (np.max(np.abs(rumble)) + 1e-9)
+        pan = rng.uniform(0.3, 0.7)
+        place(thunder[:, 0], clap * (1 - pan) * 2, start)
+        place(thunder[:, 1], clap * pan * 2, start)
+    return 0.55 * rain + 6.0 * thunder
 
 
 def sound_ocean(rng, n):
@@ -215,19 +251,79 @@ def sound_ocean(rng, n):
     return np.stack([left * (1 - pan) + right * pan * 0.5, right * pan + left * (1 - pan) * 0.5], axis=1)
 
 
-def sound_stream(rng, n):
-    def mono(r, k):
-        rush = bandpass(pink(r, k), 300, 3500) * 0.8
-        bubbles = np.zeros(k)
-        for start in r.integers(0, k, int(k / SR * 55)):
-            length = int(SR * r.uniform(0.02, 0.07))
-            t = np.arange(length) / SR
-            f0 = r.uniform(400, 1500)
-            freq = f0 * (1 + 2.5 * t / t[-1] * 0.3)
-            blip = np.sin(2 * np.pi * np.cumsum(freq) / SR) * np.exp(-t / (t[-1] / 3))
-            place(bubbles, blip * r.uniform(0.2, 1.0), int(start))
-        return rush + 1.4 * bubbles * (0.7 + 0.3 * smooth_noise(r, k, 0.5))
-    return stereo(rng, mono, n, 0.6)
+NOTE = {name: 440.0 * 2 ** ((midi - 69) / 12) for name, midi in {
+    "C3": 48, "F3": 53, "G3": 55, "A3": 57, "C4": 60, "D4": 62, "E4": 64, "F4": 65,
+    "G4": 67, "A4": 69, "B4": 71, "C5": 72,
+}.items()}
+
+# Brahms' Lullaby (Wiegenlied, 1868, public domain), simplified, in C major. (note, beats)
+LULLABY_MELODY = [
+    ("E4", 1), ("E4", 1), ("G4", 4), ("E4", 1), ("E4", 1), ("G4", 4),
+    ("E4", 1), ("G4", 1), ("C5", 2), ("B4", 1), ("A4", 2), ("A4", 1), ("G4", 3),
+    ("D4", 1), ("E4", 1), ("F4", 2), ("D4", 1), ("D4", 1), ("E4", 1), ("F4", 3),
+    ("D4", 1), ("F4", 1), ("B4", 1), ("A4", 1), ("G4", 2), ("B4", 1), ("C5", 3),
+    ("C4", 1), ("C4", 1), ("C5", 4), ("A4", 1), ("F4", 1), ("G4", 4),
+    ("E4", 1), ("C4", 1), ("F4", 1), ("G4", 1), ("A4", 2), ("G4", 4),
+    ("C4", 1), ("C4", 1), ("C5", 4), ("A4", 1), ("F4", 1), ("G4", 4),
+    ("E4", 1), ("C4", 1), ("F4", 1), ("E4", 1), ("D4", 1), ("C4", 6),
+]
+# One bass note per phrase, roughly following the harmony.
+LULLABY_BASS = ["C3", "C3", "C3", "G3", "G3", "C3", "F3", "C3", "F3", "G3", "C3"]
+
+
+def music_box(freq: float, seconds: float = 3.5) -> np.ndarray:
+    n = int(SR * seconds)
+    t = np.arange(n) / SR
+    tone = (
+        np.sin(2 * np.pi * freq * t) * np.exp(-t / 1.1)
+        + 0.35 * np.sin(2 * np.pi * freq * 2.0 * t) * np.exp(-t / 0.5)
+        + 0.12 * np.sin(2 * np.pi * freq * 3.98 * t) * np.exp(-t / 0.2)
+    )
+    return tone * np.minimum(1, t / 0.003)
+
+
+def soft_bass(freq: float, seconds: float) -> np.ndarray:
+    n = int(SR * seconds)
+    t = np.arange(n) / SR
+    tone = np.sin(2 * np.pi * freq * t) + 0.2 * np.sin(2 * np.pi * 2 * freq * t)
+    return tone * envelope(n, 0.4, seconds / 2.5)
+
+
+LULLABY_BPM = 75
+
+
+def sound_lullaby(rng, n):
+    """Brahms' Lullaby on a music box over a warm bass, laid out as an exact circle.
+
+    The loop is two full passes at a slow 75 BPM (about 2 minutes 20 seconds), so its length
+    comes from the music rather than from `n`."""
+    beats = sum(b for _, b in LULLABY_MELODY)
+    repeats = 2
+    beat = 60 / LULLABY_BPM
+    n = int(round(beats * repeats * beat * SR))
+    melody = np.zeros(n)
+    bass = np.zeros(n)
+    cursor = 0.0
+    for rep in range(repeats):
+        phrase = 0
+        beat_in_phrase = 0.0
+        place_wrap(bass, soft_bass(NOTE[LULLABY_BASS[0]], beat * 8), int(cursor * SR))
+        for index, (name, length) in enumerate(LULLABY_MELODY):
+            gain = 0.75 + 0.25 * rng.random()
+            # Tiny timing variation so it doesn't sound mechanical.
+            jitter = rng.uniform(-0.012, 0.012)
+            place_wrap(melody, music_box(NOTE[name]) * gain, int((cursor + jitter) * SR) % n)
+            cursor += length * beat
+            beat_in_phrase += length
+            if beat_in_phrase >= 9 and index < len(LULLABY_MELODY) - 1:
+                phrase += 1
+                beat_in_phrase = 0.0
+                root = LULLABY_BASS[min(phrase, len(LULLABY_BASS) - 1)]
+                place_wrap(bass, soft_bass(NOTE[root], beat * 8), int(cursor * SR) % n)
+    mix = melody / np.max(np.abs(melody)) + 0.35 * bass / np.max(np.abs(bass))
+    left = circular_reverb(mix, rng, 2.8, 0.4)
+    right = circular_reverb(mix, rng, 2.8, 0.4)
+    return np.stack([left, right], axis=1)
 
 
 def sound_wind(rng, n):
@@ -262,23 +358,50 @@ def sound_fire(rng, n):
     return stereo(rng, mono, n, 0.5)
 
 
+def cricket(rng, n, carrier, chirp_period, pulses, distance):
+    """One field cricket: chirps of a few short pulses, each with a quick attack, a slight
+    downward pitch glide and a natural decay. Timing, loudness and pulse count all wander."""
+    out = np.zeros(n)
+    pulse_len = int(SR * 0.018)
+    pt = np.arange(pulse_len) / SR
+    t = rng.uniform(0, chirp_period)
+    while t < n / SR:
+        count = int(np.clip(round(rng.normal(pulses, 0.7)), 2, 6))
+        chirp_gain = rng.uniform(0.6, 1.0)
+        f0 = carrier * rng.uniform(0.985, 1.015)
+        for p in range(count):
+            freq = f0 * (1 - 0.03 * pt / pt[-1])
+            pulse = np.sin(2 * np.pi * np.cumsum(freq) / SR)
+            pulse *= np.minimum(1, pt / 0.002) * np.exp(-pt / 0.007)
+            place(out, pulse * chirp_gain * rng.uniform(0.7, 1.0), int((t + p * rng.uniform(0.028, 0.036)) * SR))
+        t += chirp_period * rng.uniform(0.75, 1.35)
+        if rng.random() < 0.06:
+            t += rng.uniform(1, 4)  # crickets pause now and then
+    # Distance: quieter, duller and more reverberant.
+    out = lowpass(out, 9000 - 4000 * distance) * (1 - 0.75 * distance)
+    return out
+
+
 def sound_night(rng, n):
-    bed = stereo(rng, lambda r, k: bandpass(pink(r, k), 200, 2500) * 0.15, n, 0.8)
+    """A warm evening: a soft breeze, a distant cricket chorus, and a few nearer crickets."""
+    bed = stereo(rng, lambda r, k: lowpass(bandpass(pink(r, k), 120, 1500) * (0.6 + 0.4 * smooth_noise(r, k, 0.1)), 1500), n, 0.8)
+    bed = bed / (np.sqrt(np.mean(bed ** 2)) + 1e-9) * 0.05
     out = bed.copy()
-    crickets = [(4600, 0.62, 0.3), (4300, 0.75, 0.7), (4900, 0.55, 0.5), (4100, 0.9, 0.15)]
-    for freq, interval, pan in crickets:
-        voice = np.zeros(n)
-        t = rng.uniform(0, interval)
-        pulse_len = int(SR * 0.014)
-        pulse_t = np.arange(pulse_len) / SR
-        pulse = np.sin(2 * np.pi * freq * pulse_t) * np.sin(np.pi * pulse_t / pulse_t[-1])
-        while t < n / SR:
-            for p in range(rng.integers(2, 5)):
-                place(voice, pulse, int((t + p * 0.022) * SR))
-            t += interval * rng.uniform(0.9, 1.1)
-        voice *= 0.5 + 0.5 * smooth_noise(rng, n, 0.05)
-        out[:, 0] += voice * (1 - pan) * 0.35
-        out[:, 1] += voice * pan * 0.35
+    # Far-off chorus: many crickets blending into a gentle shimmer.
+    for _ in range(8):
+        voice = cricket(rng, n, rng.uniform(3900, 4700), rng.uniform(0.45, 0.8), 3, rng.uniform(0.8, 0.95))
+        pan = rng.uniform(0.1, 0.9)
+        out[:, 0] += voice * (1 - pan) * 0.5
+        out[:, 1] += voice * pan * 0.5
+    # A few nearer crickets with their own rhythm.
+    for _ in range(3):
+        voice = cricket(rng, n, rng.uniform(4100, 4900), rng.uniform(0.55, 1.0), 4, rng.uniform(0.3, 0.6))
+        pan = rng.uniform(0.15, 0.85)
+        out[:, 0] += voice * (1 - pan) * 0.5
+        out[:, 1] += voice * pan * 0.5
+    room = rng
+    out[:, 0] = 0.7 * out[:, 0] + 0.3 * signal.fftconvolve(out[:, 0], np.exp(-np.arange(int(SR * 0.6)) / (SR * 0.12)) * room.standard_normal(int(SR * 0.6)) * 0.05)[:n]
+    out[:, 1] = 0.7 * out[:, 1] + 0.3 * signal.fftconvolve(out[:, 1], np.exp(-np.arange(int(SR * 0.6)) / (SR * 0.12)) * room.standard_normal(int(SR * 0.6)) * 0.05)[:n]
     return out
 
 
@@ -321,36 +444,70 @@ def drone(n: int, seconds_per_cycle: float, rng=None) -> np.ndarray:
     return np.stack([circular_lowpass(left), circular_lowpass(right)], axis=1)
 
 
-def sound_drone(rng, n):
-    return drone(n, LOOP_SECONDS)
+PENTATONIC = [293.66, 329.63, 369.99, 440.0, 493.88, 587.33, 659.25, 739.99, 880.0]  # D major pentatonic
+
+
+def chime(freq: float, seconds: float = 5.0) -> np.ndarray:
+    n = int(SR * seconds)
+    t = np.arange(n) / SR
+    tone = np.zeros(n)
+    for ratio, amp, decay in ((1.0, 1.0, 2.2), (2.76, 0.35, 1.0), (5.4, 0.12, 0.45)):
+        tone += amp * np.sin(2 * np.pi * freq * ratio * t) * np.exp(-t / decay)
+    return tone * np.minimum(1, t / 0.004)
+
+
+def sound_bells(rng, n):
+    """Slow, sparse wind chimes and the occasional low singing bowl, with a long soft reverb."""
+    left = np.zeros(n)
+    right = np.zeros(n)
+    t = 0.0
+    while t < n / SR:
+        freq = PENTATONIC[rng.integers(len(PENTATONIC))]
+        strike = chime(freq) * rng.uniform(0.35, 0.8)
+        pan = rng.uniform(0.2, 0.8)
+        place_wrap(left, strike * (1 - pan), int(t * SR))
+        place_wrap(right, strike * pan, int(t * SR))
+        t += rng.uniform(1.4, 4.5)
+    for start in np.arange(0, n / SR, 20.0):
+        bowl = bell(14.0, rng.choice([146.83, 196.0])) * 0.55
+        offset = int((start + rng.uniform(0, 6)) * SR)
+        place_wrap(left, bowl, offset)
+        place_wrap(right, bowl, offset)
+    left = circular_reverb(left, rng, 3.5, 0.45)
+    right = circular_reverb(right, rng, 3.5, 0.45)
+    return np.stack([left, right], axis=1)
 
 
 SOUNDS = {
     "rain": sound_rain,
     "thunderstorm": sound_thunderstorm,
     "ocean": sound_ocean,
-    "stream": sound_stream,
+    "lullaby": sound_lullaby,
     "wind": sound_wind,
     "fire": sound_fire,
     "night": sound_night,
     "fan": sound_fan,
     "brown-noise": sound_brown_noise,
-    "drone": sound_drone,
+    "bells": sound_bells,
 }
 
+# Sounds built as exact circles (no crossfade needed): their notes and reverb wrap around.
+CIRCULAR_SOUNDS = {"lullaby", "bells"}
+
 # Per-sound loudness, so the set feels consistent when switching between them.
-SOUND_LEVEL_DB = {"drone": -22, "night": -24, "fan": -21}
+SOUND_LEVEL_DB = {"rain": -27, "lullaby": -23, "bells": -24, "night": -27, "fan": -21}
 
 
-def generate_sounds() -> None:
+def generate_sounds(only: list[str]) -> None:
     print("Soundscapes")
     loop = SR * LOOP_SECONDS
     for index, item in enumerate(CATALOG["soundscapes"]):
         sid = item["id"]
+        if only and sid not in only:
+            continue
         rng = np.random.default_rng(1000 + index)
-        if sid == "drone":
-            # The drone's slow LFOs complete whole cycles in the loop, so no crossfade is needed.
-            audio = drone(loop, LOOP_SECONDS)
+        if sid in CIRCULAR_SOUNDS:
+            audio = SOUNDS[sid](rng, loop)
         else:
             audio = make_loop(SOUNDS[sid](rng, loop + SR * CROSSFADE_SECONDS), loop)
         audio = normalize(audio, SOUND_LEVEL_DB.get(sid, -20))
@@ -389,10 +546,11 @@ def parse_scripts() -> dict[str, list[tuple[str, object]]]:
 _kokoro = None
 
 
-def speak(text: str) -> np.ndarray:
-    """Speaks one line with Kokoro, resampled to 44.1 kHz. Results are cached by text."""
+def speak(text: str, narrator: str) -> np.ndarray:
+    """Speaks one line with Kokoro, resampled to 44.1 kHz. Results are cached by voice and text."""
     global _kokoro
-    key = hashlib.sha1(f"{VOICE}|{VOICE_SPEED}|{text}".encode()).hexdigest()
+    voice, lang = VOICES[narrator]["voice"], VOICES[narrator]["lang"]
+    key = hashlib.sha1(f"{voice}|{VOICE_SPEED}|{text}".encode()).hexdigest()
     cached = TTS_CACHE / f"{key}.npy"
     if cached.exists():
         return np.load(cached)
@@ -400,7 +558,7 @@ def speak(text: str) -> np.ndarray:
         from kokoro_onnx import Kokoro
 
         _kokoro = Kokoro(str(TTS_DIR / "kokoro-v1.0.onnx"), str(TTS_DIR / "voices-v1.0.bin"))
-    samples, rate = _kokoro.create(text, voice=VOICE, speed=VOICE_SPEED, lang="en-us")
+    samples, rate = _kokoro.create(text, voice=voice, speed=VOICE_SPEED, lang=lang)
     audio = signal.resample_poly(np.asarray(samples, dtype=np.float64), SR, rate)
     # Trim the model's leading and trailing silence so pauses are under our control.
     loud = np.flatnonzero(np.abs(audio) > 0.01)
@@ -424,9 +582,9 @@ def bell(seconds: float = 9.0, base: float = 196.0) -> np.ndarray:
     return tone * attack / np.max(np.abs(tone))
 
 
-def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]]) -> np.ndarray:
+def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]], narrator: str) -> np.ndarray:
     total = int(SR * minutes * 60)
-    clips = [(kind, speak(value) if kind == "say" else value) for kind, value in items]
+    clips = [(kind, speak(value, narrator) if kind == "say" else value) for kind, value in items]
     # Drop the flexible pause after the very last line; the tail covers it.
     while clips and clips[-1][0] == "flex":
         clips.pop()
@@ -437,7 +595,7 @@ def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]]) ->
     available = minutes * 60 - LEAD_IN - TAIL - speech - fixed
     unit = available / weights if weights else 0
     min_flex = min((c * unit for k, c in clips if k == "flex"), default=99)
-    print(f"  {mid}: speech {speech:.0f}s of {minutes * 60}s, shortest pause {min_flex:.1f}s")
+    print(f"  {narrator}/{mid}: speech {speech:.0f}s of {minutes * 60}s, shortest pause {min_flex:.1f}s")
     if min_flex < FLEX_MIN:
         raise SystemExit(f"{mid}: script is too long for {minutes} minutes. Remove some lines.")
 
@@ -471,18 +629,19 @@ def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]]) ->
     return np.clip(mix, -0.99, 0.99)
 
 
-def generate_meditations(only: list[str]) -> None:
+def generate_meditations(narrators: list[str], only: list[str]) -> None:
     print("Meditations")
     scripts = parse_scripts()
-    for category in CATALOG["categories"]:
-        for item in category["meditations"]:
-            mid = item["id"]
-            if only and mid not in only:
-                continue
-            if mid not in scripts:
-                raise SystemExit(f"No script for {mid} in {SCRIPTS.name}")
-            audio = build_meditation(mid, item["minutes"], scripts[mid])
-            encode(audio, OUT_MEDITATIONS / f"{mid}.m4a", 64000)
+    for narrator in narrators:
+        for category in CATALOG["categories"]:
+            for item in category["meditations"]:
+                mid = item["id"]
+                if only and mid not in only:
+                    continue
+                if mid not in scripts:
+                    raise SystemExit(f"No script for {mid} in {SCRIPTS.name}")
+                audio = build_meditation(mid, item["minutes"], scripts[mid], narrator)
+                encode(audio, OUT_MEDITATIONS / narrator / f"{mid}.m4a", 64000)
 
 
 # ---------------------------------------------------------------------------
@@ -494,11 +653,19 @@ def write_audio_map() -> None:
         "// Generated by audio-tools/generate_audio.py. Do not edit by hand.",
         "// Metro only bundles files referenced by a static require(), so every file is listed here.",
         "",
-        "export const MEDITATION_AUDIO: Record<string, number> = {",
+        f"export const NARRATORS = {json.dumps(list(VOICES))} as const;",
+        "export type Narrator = (typeof NARRATORS)[number];",
+        "",
+        "export const MEDITATION_AUDIO: Record<Narrator, Record<string, number>> = {",
     ]
-    for category in CATALOG["categories"]:
-        for item in category["meditations"]:
-            lines.append(f"  '{item['id']}': require('../../assets/audio/meditations/{item['id']}.m4a'),")
+    for narrator in VOICES:
+        lines.append(f"  {narrator}: {{")
+        for category in CATALOG["categories"]:
+            for item in category["meditations"]:
+                lines.append(
+                    f"    '{item['id']}': require('../../assets/audio/meditations/{narrator}/{item['id']}.m4a'),"
+                )
+        lines.append("  },")
     lines += ["};", "", "export const SOUNDSCAPE_AUDIO: Record<string, number> = {"]
     for item in CATALOG["soundscapes"]:
         lines.append(f"  '{item['id']}': require('../../assets/audio/sounds/{item['id']}.m4a'),")
@@ -509,10 +676,13 @@ def write_audio_map() -> None:
 
 
 if __name__ == "__main__":
+    # all | sounds [id ...] | meditations [bella|george ...] [id ...] | map
     args = sys.argv[1:]
     target = args[0] if args else "all"
+    rest = args[1:]
     if target in ("all", "sounds"):
-        generate_sounds()
+        generate_sounds(rest if target == "sounds" else [])
     if target in ("all", "meditations"):
-        generate_meditations(args[1:])
+        narrators = [a for a in rest if a in VOICES] or list(VOICES)
+        generate_meditations(narrators, [a for a in rest if a not in VOICES])
     write_audio_map()

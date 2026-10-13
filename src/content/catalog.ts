@@ -1,6 +1,14 @@
 import catalog from '../../content/catalog.json';
 
-import { MEDITATION_AUDIO, SOUNDSCAPE_AUDIO } from './audio-files';
+import { MEDITATION_AUDIO, NARRATORS, SOUNDSCAPE_AUDIO, type Narrator } from './audio-files';
+
+export { NARRATORS, type Narrator };
+
+/** How each narrator is shown in the app. */
+export const NARRATOR_INFO: Record<Narrator, { name: string; label: string }> = {
+  bella: { name: 'Bella', label: 'Female' },
+  george: { name: 'George', label: 'Male' },
+};
 
 export type Meditation = {
   id: string;
@@ -47,9 +55,9 @@ export function findSoundscape(id: string): Soundscape | undefined {
   return SOUNDSCAPES.find((soundscape) => soundscape.id === id);
 }
 
-/** The bundled audio file for a meditation or soundscape. Every catalog entry has one. */
-export function audioFor(kind: 'meditation' | 'soundscape', id: string): number {
-  const source = kind === 'meditation' ? MEDITATION_AUDIO[id] : SOUNDSCAPE_AUDIO[id];
+/** The bundled audio file for a meditation (in the chosen narrator's voice) or a soundscape. */
+export function audioFor(kind: 'meditation' | 'soundscape', id: string, narrator: Narrator): number {
+  const source = kind === 'meditation' ? MEDITATION_AUDIO[narrator][id] : SOUNDSCAPE_AUDIO[id];
   if (source === undefined) {
     throw new Error(`No bundled audio for ${kind} "${id}"`);
   }

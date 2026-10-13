@@ -1,15 +1,20 @@
 import { describe, expect, it, jest } from '@jest/globals';
 
-import { CATEGORIES, MEDITATIONS, SOUNDSCAPES, findMeditation } from '../../content/catalog';
+import { CATEGORIES, MEDITATIONS, NARRATORS, SOUNDSCAPES, audioFor, findMeditation } from '../../content/catalog';
 import { clampPosition, formatClock } from '../time';
 
 jest.mock('../../content/audio-files', () => {
   const catalog = jest.requireActual<typeof import('../../../content/catalog.json')>('../../../content/catalog.json');
-  const meditations = Object.fromEntries(
-    catalog.categories.flatMap((c) => c.meditations).map((m, i) => [m.id, i + 1]),
-  );
+  const ids = catalog.categories.flatMap((c) => c.meditations).map((m) => m.id);
   const sounds = Object.fromEntries(catalog.soundscapes.map((s, i) => [s.id, 100 + i]));
-  return { MEDITATION_AUDIO: meditations, SOUNDSCAPE_AUDIO: sounds };
+  return {
+    NARRATORS: ['bella', 'george'],
+    MEDITATION_AUDIO: {
+      bella: Object.fromEntries(ids.map((id, i) => [id, i + 1])),
+      george: Object.fromEntries(ids.map((id, i) => [id, 200 + i])),
+    },
+    SOUNDSCAPE_AUDIO: sounds,
+  };
 });
 
 describe('catalog', () => {
@@ -29,6 +34,19 @@ describe('catalog', () => {
   it('gives every meditation a unique id and its category', () => {
     expect(new Set(MEDITATIONS.map((m) => m.id)).size).toBe(15);
     expect(findMeditation('breath-3')).toMatchObject({ categoryId: 'breath', categoryTitle: 'Breathing', minutes: 3 });
+  });
+});
+
+describe('narrators', () => {
+  it('offers Bella and George, each with their own recording of every meditation', () => {
+    expect(NARRATORS).toEqual(['bella', 'george']);
+    expect(audioFor('meditation', 'sleep-3', 'bella')).not.toBe(audioFor('meditation', 'sleep-3', 'george'));
+    expect(audioFor('soundscape', 'lullaby', 'george')).toBe(audioFor('soundscape', 'lullaby', 'bella'));
+  });
+
+  it('includes the new lullaby and bells soundscapes', () => {
+    expect(SOUNDSCAPES.map((s) => s.id)).toEqual(expect.arrayContaining(['lullaby', 'bells']));
+    expect(SOUNDSCAPES.map((s) => s.id)).not.toEqual(expect.arrayContaining(['stream']));
   });
 });
 

@@ -28,12 +28,12 @@ export function SoundIcon({ id, color, size = 32 }: { id: string; color: string;
             <Path d="M4 20c3-3 6-3 9 0s6 3 9 0 4-2 6-1" />
           </G>
         );
-      case 'stream':
+      case 'lullaby':
         return (
           <G {...stroke}>
-            <Path d="M8 5c4 4-4 7 0 11s-4 7 0 11" />
-            <Path d="M16 5c4 4-4 7 0 11s-4 7 0 11" />
-            <Path d="M24 5c4 4-4 7 0 11s-4 7 0 11" />
+            <Path d="M12 23V8l14-3v15" />
+            <Circle cx={9} cy={23} r={3} />
+            <Circle cx={23} cy={20} r={3} />
           </G>
         );
       case 'wind':
@@ -70,12 +70,11 @@ export function SoundIcon({ id, color, size = 32 }: { id: string; color: string;
             <Path d="M5 16v0M9 12v8M13 8v16M17 11v10M21 6v20M25 12v8M29 15v2" />
           </G>
         );
-      case 'drone':
+      case 'bells':
         return (
           <G {...stroke}>
-            <Circle cx={16} cy={16} r={3} />
-            <Circle cx={16} cy={16} r={8} opacity={0.7} />
-            <Circle cx={16} cy={16} r={13} opacity={0.4} />
+            <Path d="M16 5c-5 0-8 4-8 9v5l-2 4h20l-2-4v-5c0-5-3-9-8-9z" />
+            <Path d="M13 26a3 3 0 0 0 6 0" />
           </G>
         );
       default:

@@ -76,8 +76,9 @@ export default function AboutScreen() {
           </ThemedText>
 
           <ThemedText type="small" themeColor="textSecondary" style={styles.credits}>
-            Meditation voice generated with the open-source Kokoro text-to-speech model (Apache 2.0). All sounds
-            and music were synthesized for this app.
+            Meditation voices (Bella and George) generated with the open-source Kokoro text-to-speech model
+            (Apache 2.0). The lullaby is Brahms’ Lullaby, in the public domain. All sounds and music were synthesized
+            for this app.
           </ThemedText>
         </ScrollView>
       </SafeAreaView>

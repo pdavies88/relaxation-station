@@ -46,8 +46,12 @@ const Lotus: CalmShape = () => (
 
 const Raindrop: CalmShape = () => <Path d="M24 8c6 9 11 15 11 22a11 11 0 0 1-22 0c0-7 5-13 11-22z" fill="#9FC4FF" />;
 
-const Sparkle: CalmShape = () => (
-  <Path d="M24 6c1.5 8 4 10.5 12 12-8 1.5-10.5 4-12 12-1.5-8-4-10.5-12-12 8-1.5 10.5-4 12-12z" fill="#E4DCFF" />
+const Bell: CalmShape = () => (
+  <G>
+    <Path d="M24 9c-7 0-11 5-11 12v7l-3 5h28l-3-5v-7c0-7-4-12-11-12z" fill="#F5C26B" />
+    <Circle cx={24} cy={37} r={3.2} fill="#E0A84A" />
+    <Path d="M24 6v3" stroke="#E0A84A" strokeWidth={2.4} strokeLinecap="round" />
+  </G>
 );
 
-export const CALM_SHAPES: CalmShape[] = [Moon, Cloud, Star, Leaf, Wave, Lotus, Raindrop, Sparkle];
+export const CALM_SHAPES: CalmShape[] = [Moon, Cloud, Star, Leaf, Wave, Lotus, Raindrop, Bell];

@@ -5,18 +5,19 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HERO_HEIGHT, Hero } from '@/components/brand/hero';
 import { MiniPlayer, PlayPauseIcon } from '@/components/mini-player';
+import { SegmentedControl } from '@/components/segmented-control';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { APP_NAME, APP_TAGLINE } from '@/constants/brand';
 import { BottomTabInset, DisplayFont, MaxContentWidth, Spacing } from '@/constants/theme';
-import { CATEGORIES, type Meditation } from '@/content/catalog';
+import { CATEGORIES, NARRATOR_INFO, NARRATORS, type Meditation } from '@/content/catalog';
 import { usePlayback } from '@/context/playback-context';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function MeditateScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { track } = usePlayback();
+  const { track, narrator, setNarrator } = usePlayback();
 
   // The hero runs under the status bar. Once it scrolls away, fade in a solid strip behind the
   // status bar so the list doesn't collide with the clock.
@@ -42,6 +43,21 @@ export default function MeditateScreen() {
             <ThemedText themeColor="textSecondary" style={styles.tagline}>
               {APP_TAGLINE}
             </ThemedText>
+          </View>
+
+          <View style={styles.voice}>
+            <ThemedText type="smallBold" themeColor="textSecondary" style={styles.voiceLabel}>
+              VOICE
+            </ThemedText>
+            <SegmentedControl
+              accessibilityLabel="Meditation voice"
+              value={narrator}
+              onChange={setNarrator}
+              options={NARRATORS.map((id) => ({
+                value: id,
+                label: NARRATOR_INFO[id].label,
+              }))}
+            />
           </View>
 
           {CATEGORIES.map((category) => (
@@ -136,6 +152,12 @@ const styles = StyleSheet.create({
   },
   tagline: {
     textAlign: 'center',
+  },
+  voice: {
+    gap: Spacing.two,
+  },
+  voiceLabel: {
+    letterSpacing: 0.5,
   },
   category: {
     gap: Spacing.two,
