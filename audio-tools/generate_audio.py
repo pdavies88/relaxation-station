@@ -600,18 +600,18 @@ SHUSH_SECONDS = 3.0
 
 
 def shush_breath(rng, seconds: float) -> np.ndarray:
-    """One long "shhhh". Real /sh/ is breath noise with a broad peak near 3 kHz and very little
-    below 1 kHz. The peak drifts down a little as the breath runs out, and the loudness rises
+    """One long "shhhh". Real /sh/ is breath noise with a broad peak, here near 2.5 kHz for a soft,
+    rounded-lip sound, and very little below 1 kHz. The peak drifts down a little as the breath runs out, and the loudness rises
     and falls slowly with a slight flutter, so it sounds like a person and not a rattle."""
     nper, hop = 2048, 512
     n = int(SR * seconds)
     frames = n // hop + 2
     f = np.fft.rfftfreq(nper, 1 / SR)
     t = np.arange(frames) * hop / SR
-    peak = 3000 - 450 * np.clip(t / seconds, 0, 1)
+    peak = 2500 - 400 * np.clip(t / seconds, 0, 1)
     logf = np.log2(np.maximum(f, 20))[:, None]
     shape = np.exp(-0.5 * ((logf - np.log2(peak)[None, :]) / 0.55) ** 2)
-    shape *= np.clip((f[:, None] - 800) / 1200, 0, 1)
+    shape *= np.clip((f[:, None] - 650) / 1100, 0, 1)
     spectrum = shape * np.exp(2j * np.pi * rng.random(shape.shape))
     _, x = signal.istft(spectrum, SR, nperseg=nper, noverlap=nper - hop)
     x = np.real(x[:n])
