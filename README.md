@@ -2,9 +2,9 @@
 
 Free guided meditations and soothing soundscapes. Everything is built into the app, so it works fully offline, even in airplane mode.
 
-- **Two narrators:** a female voice (Bella, American) or a male voice (George, British), shown in the app as "Female" and "Male". Your choice is saved on your phone.
+- **Two narrators:** a female voice (Bella, American) or a male voice (Michael, American), shown in the app as "Female" and "Male". Your choice is saved on your phone.
 - **15 guided meditations** in five categories: Sleep, Stress Relief, Breathing, Body Scan and Focus. Each category has a 3, 5 and 10 minute session.
-- **10 soundscapes:** Gentle Rain, Thunder & Heavy Rain, Ocean Waves, Lullaby, Soft Wind, Crackling Fire, Summer Night, Box Fan, Brown Noise and Relaxing Bells. Each plays on a seamless loop until you stop it, like a sound machine.
+- **10 soundscapes:** Gentle Rain, Wind Chimes, Ocean Waves, Music Box Lullaby, Heartbeat, Crackling Fire, Guitar Lullaby, Box Fan, Brown Noise and Relaxing Bells. Each plays on a seamless loop until you stop it, like a sound machine.
 - **Keeps playing with the screen locked,** with lock screen and notification controls.
 - **No network, no accounts, no data collection.**
 
@@ -40,7 +40,7 @@ All audio is generated on a Mac and committed to `assets/audio/`. The app never 
 - **Catalog:** `content/catalog.json` lists every category, meditation and soundscape. The app and the generator both read it.
 - **Scripts:** `content/meditations.txt` holds the meditation scripts. Lines are spoken, `~` adds a longer pause and `[N]` adds an exact pause of N seconds.
 - **Generator:** `audio-tools/generate_audio.py`:
-  - speaks each line with the open-source Kokoro text-to-speech model (Apache 2.0) in two voices, `af_bella` (Bella) and `bm_george` (George)
+  - speaks each line with the open-source Kokoro text-to-speech model (Apache 2.0) in two voices, `af_bella` (Bella) and `am_michael` (Michael)
   - spreads the pauses so every session is exactly 3, 5 or 10 minutes
   - mixes in a soft drone and a singing bowl at the start and end
   - synthesizes the soundscapes from filtered noise and tones, and crossfades each one's end into its start so it loops seamlessly
@@ -56,7 +56,7 @@ python3 -m venv .tts/venv
 curl -L -o .tts/kokoro-v1.0.onnx https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
 curl -L -o .tts/voices-v1.0.bin https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
 npm run generate:audio                 # everything
-npm run generate:audio -- meditations george sleep-3   # one meditation in one voice
+npm run generate:audio -- meditations michael sleep-3   # one meditation in one voice
 npm run generate:audio -- sounds rain                   # one soundscape
 ```
 

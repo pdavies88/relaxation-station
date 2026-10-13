@@ -7,7 +7,7 @@ export { NARRATORS, type Narrator };
 /** How each narrator is shown in the app. */
 export const NARRATOR_INFO: Record<Narrator, { name: string; label: string }> = {
   bella: { name: 'Bella', label: 'Female' },
-  george: { name: 'George', label: 'Male' },
+  michael: { name: 'Michael', label: 'Male' },
 };
 
 export type Meditation = {

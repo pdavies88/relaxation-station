@@ -14,9 +14,11 @@ export function Button({ title, variant = 'primary', loading = false, disabled, 
   const theme = useTheme();
   const isDisabled = disabled || loading;
 
-  const backgroundColor = variant === 'primary' ? theme.tint : theme.backgroundElement;
-  const textColor =
-    variant === 'primary' ? theme.onTint : variant === 'destructive' ? theme.danger : theme.text;
+  // Secondary buttons sit on tinted screens, so they use a raised surface with an outline to stand out.
+  const backgroundColor =
+    variant === 'primary' ? theme.tint : variant === 'secondary' ? theme.controlSurface : theme.backgroundElement;
+  const borderColor = variant === 'secondary' ? theme.backgroundSelected : 'transparent';
+  const textColor = variant === 'primary' ? theme.onTint : variant === 'destructive' ? theme.danger : theme.text;
 
   return (
     <Pressable
@@ -25,7 +27,7 @@ export function Button({ title, variant = 'primary', loading = false, disabled, 
       disabled={isDisabled}
       style={(state) => [
         styles.button,
-        { backgroundColor, opacity: isDisabled ? 0.5 : state.pressed ? 0.8 : 1 },
+        { backgroundColor, borderColor, opacity: isDisabled ? 0.5 : state.pressed ? 0.8 : 1 },
         typeof style === 'function' ? style(state) : style,
       ]}
       {...rest}>
@@ -42,6 +44,7 @@ const styles = StyleSheet.create({
   button: {
     minHeight: 52,
     borderRadius: Spacing.three,
+    borderWidth: 1,
     paddingHorizontal: Spacing.four,
     alignItems: 'center',
     justifyContent: 'center',

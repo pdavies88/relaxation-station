@@ -130,12 +130,12 @@
     {
       "id": "rain",
       "title": "Gentle Rain",
-      "description": "Soft, steady rainfall."
+      "description": "A light, soft rain."
     },
     {
-      "id": "thunderstorm",
-      "title": "Thunder & Heavy Rain",
-      "description": "Heavy rain with cracks of thunder that roll away."
+      "id": "chimes",
+      "title": "Wind Chimes",
+      "description": "Metal chimes swaying in a gentle breeze."
     },
     {
       "id": "ocean",
@@ -144,13 +144,13 @@
     },
     {
       "id": "lullaby",
-      "title": "Lullaby",
-      "description": "A gentle music box lullaby."
+      "title": "Music Box Lullaby",
+      "description": "Brahms' Lullaby on a gentle music box."
     },
     {
-      "id": "wind",
-      "title": "Soft Wind",
-      "description": "A calm breeze rising and falling."
+      "id": "heartbeat",
+      "title": "Heartbeat",
+      "description": "A slow, steady heartbeat."
     },
     {
       "id": "fire",
@@ -158,9 +158,9 @@
       "description": "A warm fire popping and crackling."
     },
     {
-      "id": "night",
-      "title": "Summer Night",
-      "description": "Crickets on a warm evening breeze."
+      "id": "guitar",
+      "title": "Guitar Lullaby",
+      "description": "Soft fingerpicked guitar."
     },
     {
       "id": "fan",
@@ -175,7 +175,7 @@
     {
       "id": "bells",
       "title": "Relaxing Bells",
-      "description": "Soft chimes and singing bowls."
+      "description": "Soft bells and singing bowls."
     }
   ]
 }

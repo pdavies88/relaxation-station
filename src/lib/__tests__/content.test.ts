@@ -8,10 +8,10 @@ jest.mock('../../content/audio-files', () => {
   const ids = catalog.categories.flatMap((c) => c.meditations).map((m) => m.id);
   const sounds = Object.fromEntries(catalog.soundscapes.map((s, i) => [s.id, 100 + i]));
   return {
-    NARRATORS: ['bella', 'george'],
+    NARRATORS: ['bella', 'michael'],
     MEDITATION_AUDIO: {
       bella: Object.fromEntries(ids.map((id, i) => [id, i + 1])),
-      george: Object.fromEntries(ids.map((id, i) => [id, 200 + i])),
+      michael: Object.fromEntries(ids.map((id, i) => [id, 200 + i])),
     },
     SOUNDSCAPE_AUDIO: sounds,
   };
@@ -38,15 +38,18 @@ describe('catalog', () => {
 });
 
 describe('narrators', () => {
-  it('offers Bella and George, each with their own recording of every meditation', () => {
-    expect(NARRATORS).toEqual(['bella', 'george']);
-    expect(audioFor('meditation', 'sleep-3', 'bella')).not.toBe(audioFor('meditation', 'sleep-3', 'george'));
-    expect(audioFor('soundscape', 'lullaby', 'george')).toBe(audioFor('soundscape', 'lullaby', 'bella'));
+  it('offers Bella and Michael, each with their own recording of every meditation', () => {
+    expect(NARRATORS).toEqual(['bella', 'michael']);
+    expect(audioFor('meditation', 'sleep-3', 'bella')).not.toBe(audioFor('meditation', 'sleep-3', 'michael'));
+    expect(audioFor('soundscape', 'lullaby', 'michael')).toBe(audioFor('soundscape', 'lullaby', 'bella'));
   });
 
-  it('includes the new lullaby and bells soundscapes', () => {
-    expect(SOUNDSCAPES.map((s) => s.id)).toEqual(expect.arrayContaining(['lullaby', 'bells']));
-    expect(SOUNDSCAPES.map((s) => s.id)).not.toEqual(expect.arrayContaining(['stream']));
+  it('includes the current soundscapes and none of the retired ones', () => {
+    const ids = SOUNDSCAPES.map((s) => s.id);
+    expect(ids).toEqual(expect.arrayContaining(['lullaby', 'bells', 'chimes', 'heartbeat', 'guitar']));
+    for (const retired of ['stream', 'drone', 'thunderstorm', 'wind', 'night']) {
+      expect(ids).not.toContain(retired);
+    }
   });
 });
 

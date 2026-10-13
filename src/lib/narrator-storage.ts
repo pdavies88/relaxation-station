@@ -8,6 +8,8 @@ const KEY = 'narrator.v1';
 export function loadNarrator(): Narrator {
   try {
     const value = Storage.getItemSync(KEY);
+    // Michael replaced an earlier male voice, George, so keep that choice male.
+    if (value === 'george') return 'michael';
     return NARRATORS.includes(value as Narrator) ? (value as Narrator) : 'bella';
   } catch {
     return 'bella';

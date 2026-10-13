@@ -32,7 +32,7 @@ export function buildLogoSvg({ cornerRadius = 16, withBackground = true }: LogoS
   <circle cx="50" cy="11" r="1.1" fill="#FFF4D6"/>
   <circle cx="45" cy="22" r="0.9" fill="#FFF4D6" opacity="0.8"/>
   <path d="M9.5 21l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="#FFF4D6" opacity="0.9"/>
-  <path d="M35 10a14 14 0 1 0 9 25A11.5 11.5 0 0 1 35 10z" fill="#FFD98A"/>
+  <path d="M35 10a14 14 0 1 0 9 25A16 16 0 0 1 35 10z" fill="#FFD98A"/>
   <g fill="none" stroke-linecap="round" stroke-width="3">
     <path d="M10 44c5.5-4.5 11-4.5 16.5 0s11 4.5 16.5 0 7.5-3.5 11-1.5" stroke="#FFFFFF" opacity="0.95"/>
     <path d="M10 52c5.5-4.5 11-4.5 16.5 0s11 4.5 16.5 0 7.5-3.5 11-1.5" stroke="#A9E4F2" opacity="0.85"/>

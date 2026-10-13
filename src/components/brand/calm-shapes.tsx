@@ -6,7 +6,7 @@ import { Circle, Ellipse, G, Path } from 'react-native-svg';
  */
 type CalmShape = () => React.ReactElement;
 
-const Moon: CalmShape = () => <Path d="M30 8a17 17 0 1 0 10 30A14 14 0 0 1 30 8z" fill="#FFD98A" />;
+const Moon: CalmShape = () => <Path d="M30 8a17 17 0 1 0 10 30A20 20 0 0 1 30 8z" fill="#FFD98A" />;
 
 const Star: CalmShape = () => (
   <Path d="M24 8l4.2 10 10.8.9-8.2 7.1 2.5 10.6L24 31l-9.3 5.6 2.5-10.6L9 18.9l10.8-.9z" fill="#FFE7A8" />

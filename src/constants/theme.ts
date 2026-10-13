@@ -15,6 +15,8 @@ export const Colors = {
     danger: '#B42318',
     border: '#DDD8F6',
     heroBackground: '#E6E2FF',
+    /** Raised round controls that sit on a tinted bar, such as the mini player's stop button. */
+    controlSurface: '#FFFFFF',
   },
   dark: {
     text: '#F2F0FF',
@@ -27,6 +29,7 @@ export const Colors = {
     danger: '#FDA29B',
     border: '#272A4A',
     heroBackground: '#151838',
+    controlSurface: '#3A3E66',
   },
 } as const;
 

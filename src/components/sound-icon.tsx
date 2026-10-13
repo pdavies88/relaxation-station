@@ -14,11 +14,12 @@ export function SoundIcon({ id, color, size = 32 }: { id: string; color: string;
             <Path d="M11 24l-1 3M16 24l-1 3M21 24l-1 3" />
           </G>
         );
-      case 'thunderstorm':
+      case 'chimes':
         return (
           <G {...stroke}>
-            <Path d={cloud} />
-            <Path d="M16.5 21l-2.5 4h3.5l-2.5 4" />
+            <Path d="M5 5h22M9 5v4M14 5v4M19 5v4M24 5v4" />
+            <Path d="M9 10v10M14 10v14M19 10v12M24 10v8" strokeWidth={3.2} />
+            <Circle cx={16.5} cy={27.5} r={1.6} />
           </G>
         );
       case 'ocean':
@@ -36,12 +37,11 @@ export function SoundIcon({ id, color, size = 32 }: { id: string; color: string;
             <Circle cx={23} cy={20} r={3} />
           </G>
         );
-      case 'wind':
+      case 'heartbeat':
         return (
           <G {...stroke}>
-            <Path d="M4 12h15a3.5 3.5 0 1 0-3.5-3.5" />
-            <Path d="M4 18h20a3.5 3.5 0 1 1-3.5 3.5" />
-            <Path d="M4 24h9" />
+            <Path d="M16 27s-11-6.5-11-14a6 6 0 0 1 11-3.3A6 6 0 0 1 27 13c0 7.5-11 14-11 14z" />
+            <Path d="M9 16h4l1.5-3 3 6 1.5-3h4" />
           </G>
         );
       case 'fire':
@@ -50,11 +50,12 @@ export function SoundIcon({ id, color, size = 32 }: { id: string; color: string;
             <Path d="M16 4c1 5 7 7 7 14a7 7 0 0 1-14 0c0-4 2-6 4-8 0 3 1 5 3 5 0-4-1-7 0-11z" />
           </G>
         );
-      case 'night':
+      case 'guitar':
         return (
           <G {...stroke}>
-            <Path d="M19 6a10 10 0 1 0 7 17A8 8 0 0 1 19 6z" />
-            <Path d="M7 7v3M5.5 8.5h3" />
+            <Path d="M16 2.5v15.2M14 2.5h4M13.5 24.5h5" />
+            <Path d="M16 11c-3.5 0-5.5 2.3-5 5.2-3 1.2-4.3 3.5-3.7 6.3.7 3.4 4.2 5.5 8.7 5.5s8-2.1 8.7-5.5c.6-2.8-.7-5.1-3.7-6.3.5-2.9-1.5-5.2-5-5.2z" />
+            <Circle cx={16} cy={20} r={2.3} />
           </G>
         );
       case 'fan':
