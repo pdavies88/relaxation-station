@@ -1,0 +1,599 @@
+# Guided meditation scripts for Relaxation Station.
+#
+# Format:
+#   ## <meditation id>       starts a meditation (ids match content/catalog.json)
+#   any other line           is spoken, then followed by a short flexible pause
+#   ~                        adds a longer flexible pause
+#   [N]                      adds an exact pause of N seconds (used for breath counts)
+#   # comment                is ignored
+#
+# The generator spreads the flexible pauses so each session lasts exactly its listed length.
+# Keep spoken words to about half of the session so there is room for silence.
+
+## sleep-3
+Welcome. Let's take a few quiet minutes to settle in for the night.
+Lie down, or sit somewhere comfortable, and let your eyes gently close.
+~
+Take a slow breath in through your nose.
+And let it go, slowly, through your mouth.
+Once more. Breathe in.
+And breathe out, letting your shoulders drop.
+~
+Let your breathing find its own easy rhythm. There's nothing you need to do.
+Feel the weight of your body resting on the bed beneath you.
+Let your jaw loosen. Let your hands grow soft and heavy.
+~
+If thoughts about today appear, that's okay. Notice them, and let them drift past like clouds.
+The day is done. You can put it down now.
+~
+With every breath out, sink a little deeper into rest.
+~
+Stay here as long as you like. Let sleep come in its own time.
+Goodnight.
+
+## sleep-5
+Welcome. This is your time to let go of the day and drift toward sleep.
+Settle into a comfortable position, and let your eyes close.
+~
+Breathe in slowly, filling your lungs.
+And breathe out, long and slow.
+Again, breathe in.
+And out, letting the bed hold all of your weight.
+~
+Now bring your attention to the top of your head.
+Imagine a warm, gentle heaviness beginning there, and slowly flowing down.
+It softens your forehead, and the small muscles around your eyes.
+It relaxes your cheeks, your jaw, and your tongue.
+~
+The warmth flows down your neck and across your shoulders.
+Let them sink, away from your ears.
+It moves down your arms, all the way to your fingertips.
+Your arms feel heavy, and completely at rest.
+~
+The warmth spreads through your chest and your belly, rising and falling with each breath.
+It flows down through your hips, your legs, and into your feet.
+Your whole body is heavy, warm and still.
+~
+There is nowhere to go and nothing to solve right now.
+Just the gentle rhythm of your breathing.
+~
+If your mind wanders, simply return to the feeling of being held.
+~
+Let yourself drift. Let sleep arrive whenever it's ready.
+Goodnight.
+
+## sleep-10
+Welcome to Deep Rest. Over the next few minutes, you'll slowly release the day, and let your body and mind prepare for sleep.
+Lie down in a comfortable position. Let your arms rest by your sides, and gently close your eyes.
+~
+Begin by taking three slow breaths.
+Breathe in through your nose.
+And sigh it out through your mouth.
+Breathe in again, a little deeper.
+And let it all go.
+One more. In.
+And out.
+~
+Now let your breath return to its natural pace. You don't need to control it.
+Just notice the cool air coming in, and the warm air flowing out.
+~
+Bring your attention to your feet. Notice how they feel right now.
+Imagine them becoming heavy and warm, sinking into the bed.
+Let that heaviness move up into your ankles, your calves, and your knees.
+Your legs are completely relaxed. There's nothing they need to do.
+~
+Let the relaxation rise into your hips and lower back.
+Feel your back spread out and sink down, fully supported.
+~
+Now your belly. Let it be soft. Let it rise and fall on its own.
+Your chest relaxes too. Each breath out lets go a little more.
+~
+Bring your attention to your hands. Let your fingers uncurl.
+Your hands are warm and heavy, resting easily.
+The heaviness travels up your arms, into your shoulders.
+Let your shoulders melt away from your neck.
+~
+Soften your neck. Let your head feel heavy on the pillow.
+Relax your jaw, and let your teeth part slightly.
+Smooth the space between your eyebrows.
+Let your whole face be calm and still.
+~
+Your entire body is resting now, heavy, warm and safe.
+~
+Now imagine a quiet place where you feel completely at ease.
+It might be a beach at dusk, a cabin in the woods, or somewhere only you know.
+Notice the soft light there. The gentle sounds. The comfortable temperature.
+You are safe here. Nothing is asked of you.
+~
+If a thought about tomorrow appears, imagine placing it in a small box and setting it aside. It will be there in the morning.
+Then return to your quiet place.
+~
+Let your breathing slow even further.
+Each breath out carries you a little deeper into rest.
+~
+Deeper and deeper.
+~
+You don't need to stay awake for the rest of this. You can let go completely.
+~
+Rest now. Sleep well.
+
+## stress-3
+Welcome. Let's take a short break to reset.
+Sit comfortably, with your feet on the floor. You can close your eyes, or rest your gaze on one spot.
+~
+Take a deep breath in.
+And let it out slowly, like a long sigh.
+Once more. In.
+And out.
+~
+Notice how you're feeling right now, without trying to change it.
+Maybe there's tightness in your shoulders, or a busy feeling in your mind. That's okay.
+~
+On your next breath out, let your shoulders drop.
+Unclench your jaw. Soften your hands.
+~
+Now notice three things you can hear around you. Just listen.
+~
+This moment is all you need to handle right now. Not the whole day. Just this breath.
+~
+Take one more deep breath in.
+And let it go.
+When you're ready, open your eyes, and carry this calm with you.
+
+## stress-5
+Welcome. For the next few minutes, you can put everything else on hold.
+Sit or lie down comfortably, and let your eyes close.
+~
+Take a slow breath in.
+And breathe out, a little longer than you breathed in.
+Again. In.
+And a long, slow breath out.
+~
+Now gently notice what you're carrying today.
+Maybe it's a worry, a long to-do list, or a difficult conversation.
+You don't need to solve it right now. Just notice it's there.
+~
+Imagine holding that worry in your hands, like a stone.
+Feel its weight.
+Now imagine gently setting the stone down beside you.
+It's still there. You can pick it up later if you need to. But for now, your hands are free.
+~
+Notice how your body feels without that weight.
+Let your shoulders soften. Let your breath slow down.
+~
+If something else comes up, do the same. Notice it. Hold it. And set it down.
+~
+Breathing in, I know I'm breathing in.
+Breathing out, I let go.
+~
+Breathing in, calm.
+Breathing out, ease.
+~
+Stay with this quiet for a moment longer.
+~
+When you're ready, take a deep breath, wiggle your fingers and toes, and open your eyes.
+Remember, you can set things down whenever you need to.
+
+## stress-10
+Welcome to Calm Waters. Over the next ten minutes, you'll let your mind settle, the way a lake becomes clear and still.
+Find a comfortable position, sitting or lying down, and gently close your eyes.
+~
+Start with a few deep breaths.
+Breathe in slowly through your nose.
+And breathe out through your mouth.
+Again. In.
+And out.
+One more time, in.
+And all the way out.
+~
+Let your breathing return to normal.
+Notice where you feel it most. Perhaps in your nose, your chest, or your belly.
+Rest your attention there.
+~
+Now imagine a lake on a windy day. The surface is choppy. The water is cloudy with sand and mud.
+This is what a busy mind can feel like. Thoughts swirling, one after another.
+~
+You don't have to force the water to be still. You can't.
+But if you simply wait, the wind begins to ease.
+~
+With each breath, imagine the wind growing calmer.
+The waves become ripples.
+The ripples become gentle movements on the surface.
+~
+Slowly, the sand begins to settle. It drifts down, to the bottom of the lake.
+The water becomes clearer and clearer.
+~
+When a thought appears, picture it as a small leaf landing on the water.
+Watch it float. Watch it drift away.
+You don't need to follow it.
+~
+Return to your breath, and to the stillness of the lake.
+~
+Now the surface is smooth, like glass.
+It reflects the sky perfectly. The clouds, the trees, the soft light.
+This stillness is always underneath, even on stormy days.
+~
+Rest here, in the calm.
+~
+If your mind wanders, that's completely normal. Simply notice, and gently come back to the still water.
+~
+Breathe in, and feel the calm.
+Breathe out, and let it spread through your whole body.
+~
+Stay with this stillness for a little longer.
+~
+~
+Slowly begin to bring your attention back to the room.
+Notice the surface beneath you, and the sounds around you.
+Take a deep breath in.
+And let it go.
+When you're ready, open your eyes. You can return to calm waters whenever you need them.
+
+## breath-3
+Welcome to Box Breathing. This simple pattern can help you feel calm and steady.
+Sit up comfortably and let your eyes close, or soften your gaze.
+We'll breathe in, hold, breathe out, and hold, each for a count of four.
+~
+Let's begin. Breathe out fully.
+Breathe in.
+[4]
+Hold.
+[4]
+Breathe out.
+[4]
+Hold.
+[4]
+Breathe in.
+[4]
+Hold.
+[4]
+Breathe out.
+[4]
+Hold.
+[4]
+Again. Breathe in.
+[4]
+Hold.
+[4]
+Breathe out.
+[4]
+Hold.
+[4]
+Keep going at your own pace, counting to four in your mind.
+[16]
+[16]
+[16]
+Notice how your body feels now.
+~
+Let your breathing return to normal.
+When you're ready, open your eyes.
+
+## breath-5
+Welcome to Ocean Breath. We'll breathe slowly and deeply, like waves rising and falling.
+Sit or lie down comfortably, and close your eyes.
+~
+Place one hand on your belly, if you like.
+As you breathe in, let your belly rise, like a wave coming in.
+As you breathe out, let it fall, like the wave going back out to sea.
+~
+Let's breathe together. Breathe in, slowly.
+[5]
+And breathe out, slowly.
+[6]
+Breathe in, the wave rising.
+[5]
+And out, the wave pulling back.
+[6]
+In.
+[5]
+And out.
+[6]
+~
+Keep breathing this way on your own. Slow and smooth, in and out.
+~
+If it helps, imagine the sound of the ocean with each breath. The gentle rush in, and the soft pull back.
+~
+Notice how each breath out lets your body relax a little more.
+~
+If your mind wanders, ride the next wave back to your breath.
+~
+Breathe in.
+[5]
+And out.
+[6]
+~
+Rest in this steady rhythm.
+~
+Now let your breathing return to its natural pace.
+Take a moment to notice how you feel.
+When you're ready, open your eyes.
+
+## breath-10
+Welcome to Breath of Calm. In this practice, you'll gently lengthen each breath out. A longer exhale is a simple way to help your body relax.
+Find a comfortable position and close your eyes.
+~
+First, just notice your breath as it is. Don't change anything yet.
+Notice where you feel it. The air at your nose, the rise of your chest, the movement of your belly.
+~
+Now let's begin to slow it down.
+Breathe in for a count of four.
+[4]
+And breathe out for a count of six.
+[6]
+In for four.
+[4]
+And out for six.
+[6]
+In.
+[4]
+And out, slow and long.
+[6]
+~
+Keep this rhythm on your own. In for four, out for six.
+~
+Let each breath out feel like a soft sigh. No effort, no forcing.
+~
+If counting feels uncomfortable, let it go and simply make the breath out a little longer than the breath in.
+~
+Notice your shoulders. Let them soften with every exhale.
+Notice your jaw. Let it loosen.
+Notice your hands. Let them rest.
+~
+With each breath in, imagine drawing in calm, clean air.
+With each breath out, imagine releasing tension and tiredness.
+~
+Now let's try a slightly longer breath out.
+Breathe in for four.
+[4]
+And breathe out for eight.
+[8]
+In for four.
+[4]
+And out for eight.
+[8]
+~
+Continue on your own, at whatever pace feels comfortable.
+~
+If your mind drifts, that's natural. Notice where it went, and return to counting your breath.
+~
+Feel the calm spreading through your body with each long breath out.
+~
+Stay with this gentle rhythm.
+~
+~
+Now release the counting, and let your breath return to its natural pace.
+Notice how your body feels. Notice how your mind feels.
+~
+Take one more deep breath in.
+And let it go.
+When you're ready, gently open your eyes.
+
+## body-3
+Welcome. Let's take a quick moment to check in with your body.
+Sit or lie down comfortably, and close your eyes.
+~
+Take a slow breath in.
+And let it out.
+~
+Start at the top of your head. Notice any sensations there. Tingling, warmth, or nothing at all. All of it is fine.
+Move down to your face. Relax your forehead, your eyes, and your jaw.
+~
+Notice your neck and shoulders. If they feel tight, breathe into them, and let them soften.
+Move down your arms, to your hands. Let them be loose and still.
+~
+Notice your chest and belly, moving with your breath.
+Your back, supported by your chair or the floor.
+~
+Move down through your hips, your legs, and all the way to your feet.
+Feel your feet resting where they are.
+~
+Now sense your whole body at once, breathing and alive.
+~
+Take one more deep breath in.
+And breathe out.
+When you're ready, open your eyes.
+
+## body-5
+Welcome to Releasing Tension. In the next few minutes, you'll find where you're holding tension, and gently let it go.
+Get comfortable, sitting or lying down, and close your eyes.
+~
+Take a deep breath in.
+And breathe out slowly.
+~
+We'll tense and release a few areas. Tense gently, never to the point of pain.
+~
+Start with your hands. Make two fists, and squeeze.
+[4]
+And let go. Feel the difference as your hands relax.
+~
+Now lift your shoulders up toward your ears, and hold them there.
+[4]
+And drop them. Let them sink down.
+~
+Scrunch up your face. Squeeze your eyes, wrinkle your nose.
+[4]
+And release. Let your whole face go smooth and soft.
+~
+Now press your feet down, and tighten your legs.
+[4]
+And let go. Feel the warmth flow into your legs.
+~
+Take a slow breath, and scan your body for any tension that's left.
+Wherever you find it, breathe into that place.
+And as you breathe out, let it soften.
+~
+Notice how your body feels now. Heavier. Looser. More at ease.
+~
+Rest in this feeling for a moment.
+~
+Take one more deep breath in.
+And let it all go.
+When you're ready, open your eyes.
+
+## body-10
+Welcome to the Full Body Scan. You'll move your attention slowly through your body, noticing each part with curiosity and kindness.
+Lie down, or sit comfortably, and gently close your eyes.
+~
+Take a few slow breaths.
+Breathe in.
+And breathe out.
+Again. In.
+And out.
+~
+Let your breathing settle into its own rhythm.
+In this practice, there's nothing to fix. You're simply noticing.
+~
+Bring your attention to the top of your head.
+Notice any sensations. Warmth, tingling, pressure, or perhaps nothing at all.
+~
+Move your attention to your forehead. Let it soften.
+Notice your eyes, resting in their sockets. Let them be heavy.
+Your cheeks. Your nose. The air moving in and out.
+Your mouth and jaw. Let your teeth part slightly, and your tongue rest.
+~
+Now your neck. Notice the front of your throat, and the back of your neck.
+Let your attention spread across your shoulders.
+If you notice tightness, breathe into it, and let it ease.
+~
+Move down your right arm. Your upper arm, your elbow, your forearm.
+Your wrist, your palm, and each finger.
+~
+Now your left arm. Upper arm, elbow, forearm.
+Wrist, palm, and fingers.
+Both arms resting, heavy and relaxed.
+~
+Bring your attention to your chest. Feel it rise and fall with each breath.
+Notice your upper back, against the surface beneath you.
+~
+Move down to your belly. Let it be soft.
+Notice your lower back. Let it release.
+~
+Now your hips, and the weight of your body sinking down.
+~
+Move into your right leg. Your thigh, your knee, your calf.
+Your ankle, and your foot. The heel, the sole, and each toe.
+~
+Now your left leg. Thigh, knee, calf.
+Ankle, foot, heel, sole, and toes.
+~
+Now expand your attention to your whole body at once.
+From the top of your head to the tips of your toes.
+Breathing. Resting. Alive.
+~
+Rest in this awareness of your whole body.
+~
+If your mind wanders, gently bring it back to the feeling of your body breathing.
+~
+~
+Slowly begin to deepen your breath.
+Wiggle your fingers and toes.
+Gently stretch, if that feels good.
+When you're ready, open your eyes, and carry this sense of ease with you.
+
+## focus-3
+Welcome. Let's take a few minutes to clear your mind before you begin.
+Sit up tall but relaxed, and close your eyes or lower your gaze.
+~
+Take a deep breath in.
+And breathe out.
+~
+Bring your attention to your breath, right at the tip of your nose.
+Feel the cool air coming in, and the warm air going out.
+~
+Your mind may jump to things you need to do. That's normal.
+Each time it does, notice it, and come back to the breath.
+That moment of coming back is what builds focus.
+~
+Let's count ten breaths. Count one as you breathe out.
+~
+If you lose count, simply start again at one.
+~
+~
+Now think of the one thing you want to focus on next.
+Just one thing.
+~
+Take a final deep breath in.
+And let it go.
+Open your eyes, and begin.
+
+## focus-5
+Welcome to Single Point. You'll rest your attention on one simple thing, and practice returning to it.
+Sit comfortably, with your back upright but not stiff. Close your eyes.
+~
+Take a slow breath in.
+And breathe out.
+~
+For this practice, your point of focus is the sensation of breathing in your belly.
+Feel it rise as you breathe in, and fall as you breathe out.
+~
+Rest your attention there, lightly, like a butterfly landing on a flower.
+~
+Before long, your mind will wander. To a sound, a memory, a plan.
+When you notice this, silently say, wandering. Then gently return to the belly.
+~
+There's no need to be frustrated. Every return is a success.
+~
+Rise and fall.
+~
+Rise and fall.
+~
+If it helps, you can silently note, rising, as you breathe in, and falling, as you breathe out.
+~
+Stay with this single point.
+~
+~
+Now let go of the focus, and notice how your mind feels. Perhaps a little clearer. A little steadier.
+Take a deep breath in.
+And breathe out.
+When you're ready, open your eyes.
+
+## focus-10
+Welcome to Steady Attention. Over the next ten minutes, you'll train your attention, like strengthening a muscle, with patience and kindness.
+Sit comfortably, upright and relaxed, and close your eyes.
+~
+Take three slow breaths.
+In.
+And out.
+In.
+And out.
+In.
+And out.
+~
+Let your breathing return to normal.
+Bring your attention to the feeling of breath at your nose.
+Notice the air as it enters, and as it leaves.
+~
+Keep your attention here. When it drifts, notice where it went, and come back.
+~
+~
+Now let your attention widen to include sounds.
+Notice sounds near you, and sounds far away.
+You don't need to name them or judge them. Just let them come and go.
+~
+~
+Now bring your attention back to a single point, the breath at your nose.
+Notice how it feels to narrow your focus again.
+~
+This is the skill. Widening and narrowing. Wandering and returning.
+~
+Now let's count breaths. Count one on the next breath out, up to ten. Then begin again.
+~
+~
+If you lose count, there's no problem. Start again at one.
+~
+~
+Notice any thoughts that pull at you. Plans, worries, ideas.
+Imagine placing each one on a shelf, where you can collect it later.
+Then return to the breath.
+~
+~
+Now release the counting, and simply rest your attention on breathing.
+Steady. Relaxed. Present.
+~
+~
+Before you finish, choose one task you'd like to give your full attention to today.
+Picture yourself doing it, calm and focused.
+~
+Take a deep breath in.
+And breathe out.
+Gently open your eyes. Your attention is ready.

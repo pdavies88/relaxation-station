@@ -1,0 +1,66 @@
+{
+  "categories": [
+    {
+      "id": "sleep",
+      "title": "Sleep",
+      "description": "Wind down and let the day go.",
+      "meditations": [
+        { "id": "sleep-3", "title": "Settle In", "minutes": 3, "description": "A short wind-down to slow your breathing before bed." },
+        { "id": "sleep-5", "title": "Drift Off", "minutes": 5, "description": "Relax your body from head to toe and drift toward sleep." },
+        { "id": "sleep-10", "title": "Deep Rest", "minutes": 10, "description": "A slow, unhurried journey into deep rest." }
+      ]
+    },
+    {
+      "id": "stress",
+      "title": "Stress Relief",
+      "description": "Loosen the grip of a busy mind.",
+      "meditations": [
+        { "id": "stress-3", "title": "Quick Reset", "minutes": 3, "description": "Pause, breathe and reset in the middle of a hectic day." },
+        { "id": "stress-5", "title": "Let It Go", "minutes": 5, "description": "Notice what you are holding on to, and gently set it down." },
+        { "id": "stress-10", "title": "Calm Waters", "minutes": 10, "description": "Let your thoughts settle like a lake becoming still." }
+      ]
+    },
+    {
+      "id": "breath",
+      "title": "Breathing",
+      "description": "Steady your breath, steady your mind.",
+      "meditations": [
+        { "id": "breath-3", "title": "Box Breathing", "minutes": 3, "description": "Breathe in, hold, out and hold for a count of four." },
+        { "id": "breath-5", "title": "Ocean Breath", "minutes": 5, "description": "Slow, deep breaths that rise and fall like waves." },
+        { "id": "breath-10", "title": "Breath of Calm", "minutes": 10, "description": "Lengthen each exhale to help your body relax." }
+      ]
+    },
+    {
+      "id": "body",
+      "title": "Body Scan",
+      "description": "Reconnect with how your body feels.",
+      "meditations": [
+        { "id": "body-3", "title": "Quick Check-In", "minutes": 3, "description": "A brief sweep of attention through the body." },
+        { "id": "body-5", "title": "Releasing Tension", "minutes": 5, "description": "Find the places you hold tension and soften them." },
+        { "id": "body-10", "title": "Full Body Scan", "minutes": 10, "description": "A slow, complete scan from the top of your head to your toes." }
+      ]
+    },
+    {
+      "id": "focus",
+      "title": "Focus",
+      "description": "Clear the noise and find your center.",
+      "meditations": [
+        { "id": "focus-3", "title": "Clear Mind", "minutes": 3, "description": "A quick reset before you start something important." },
+        { "id": "focus-5", "title": "Single Point", "minutes": 5, "description": "Rest your attention on one thing and keep coming back." },
+        { "id": "focus-10", "title": "Steady Attention", "minutes": 10, "description": "Train a calm, steady focus that you can return to all day." }
+      ]
+    }
+  ],
+  "soundscapes": [
+    { "id": "rain", "title": "Gentle Rain", "description": "Soft, steady rainfall." },
+    { "id": "thunderstorm", "title": "Thunderstorm", "description": "Heavy rain with distant rolling thunder." },
+    { "id": "ocean", "title": "Ocean Waves", "description": "Waves washing slowly onto the shore." },
+    { "id": "stream", "title": "Mountain Stream", "description": "Water bubbling over smooth stones." },
+    { "id": "wind", "title": "Soft Wind", "description": "A calm breeze rising and falling." },
+    { "id": "fire", "title": "Crackling Fire", "description": "A warm fire popping and crackling." },
+    { "id": "night", "title": "Summer Night", "description": "Crickets singing on a warm evening." },
+    { "id": "fan", "title": "Box Fan", "description": "The steady hum of a fan." },
+    { "id": "brown-noise", "title": "Brown Noise", "description": "Deep, smooth noise that masks other sounds." },
+    { "id": "drone", "title": "Dreamy Drone", "description": "Slow, warm tones that drift and blend." }
+  ]
+}
