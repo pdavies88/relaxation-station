@@ -93,8 +93,7 @@
       ],
       "expo-font",
       "./plugins/with-ios-scene-lifecycle",
-      "expo-asset",
-      "expo-sqlite"
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

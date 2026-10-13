@@ -2,7 +2,7 @@
 
     .tts/venv/bin/python audio-tools/generate_audio.py            # everything
     .tts/venv/bin/python audio-tools/generate_audio.py sounds     # soundscapes only
-    .tts/venv/bin/python audio-tools/generate_audio.py meditations [bella|michael] [id ...]
+    .tts/venv/bin/python audio-tools/generate_audio.py meditations [id ...]
     .tts/venv/bin/python audio-tools/generate_audio.py sounds [id ...]
 
 Soundscapes are synthesized from filtered noise and tones, and made to loop seamlessly.
@@ -37,12 +37,12 @@ TTS_DIR = ROOT / ".tts"
 TTS_CACHE = TTS_DIR / "cache"
 
 SR = 44100
-# Narrators the user can choose between: Kokoro voice id, language, speaking speed, and the
-# seconds of silence between sentences in one line.
-VOICES = {
-    "bella": {"voice": "af_bella", "lang": "en-us", "speed": 0.74, "sentence_gap": 0.45},
-    "michael": {"voice": "am_michael", "lang": "en-us", "speed": 0.74, "sentence_gap": 0.45},
-}
+# The narrator: Kokoro voice "Bella" (American English), slowed a little for a calm pace, with a
+# short silence between sentences in one line.
+VOICE = "af_bella"
+VOICE_LANG = "en-us"
+VOICE_SPEED = 0.74
+SENTENCE_GAP = 0.45
 
 
 # ---------------------------------------------------------------------------
@@ -628,23 +628,22 @@ def parse_scripts() -> dict[str, list[tuple[str, object]]]:
 _kokoro = None
 
 
-def speak(text: str, narrator: str) -> np.ndarray:
+def speak(text: str) -> np.ndarray:
     """Speaks one line, sentence by sentence, with a short pause between sentences."""
     sentences = [part for part in re.split(r"(?<=[.!?])\s+", text.strip()) if part]
-    gap = np.zeros(int(SR * VOICES[narrator]["sentence_gap"]))
+    gap = np.zeros(int(SR * SENTENCE_GAP))
     pieces: list[np.ndarray] = []
     for index, sentence in enumerate(sentences):
         if index:
             pieces.append(gap)
-        pieces.append(speak_sentence(sentence, narrator))
+        pieces.append(speak_sentence(sentence))
     return np.concatenate(pieces)
 
 
-def speak_sentence(text: str, narrator: str) -> np.ndarray:
+def speak_sentence(text: str) -> np.ndarray:
     """Speaks one sentence with Kokoro, resampled to 44.1 kHz. Results are cached by voice and text."""
     global _kokoro
-    voice, lang, speed = (VOICES[narrator][k] for k in ("voice", "lang", "speed"))
-    key = hashlib.sha1(f"{voice}|{speed}|{text}".encode()).hexdigest()
+    key = hashlib.sha1(f"{VOICE}|{VOICE_SPEED}|{text}".encode()).hexdigest()
     cached = TTS_CACHE / f"{key}.npy"
     if cached.exists():
         return np.load(cached)
@@ -652,7 +651,7 @@ def speak_sentence(text: str, narrator: str) -> np.ndarray:
         from kokoro_onnx import Kokoro
 
         _kokoro = Kokoro(str(TTS_DIR / "kokoro-v1.0.onnx"), str(TTS_DIR / "voices-v1.0.bin"))
-    samples, rate = _kokoro.create(text, voice=voice, speed=speed, lang=lang)
+    samples, rate = _kokoro.create(text, voice=VOICE, speed=VOICE_SPEED, lang=VOICE_LANG)
     audio = signal.resample_poly(np.asarray(samples, dtype=np.float64), SR, rate)
     # Trim the model's leading and trailing silence so pauses are under our control.
     loud = np.flatnonzero(np.abs(audio) > 0.01)
@@ -676,9 +675,9 @@ def bell(seconds: float = 9.0, base: float = 196.0) -> np.ndarray:
     return tone * attack / np.max(np.abs(tone))
 
 
-def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]], narrator: str) -> np.ndarray:
+def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]]) -> np.ndarray:
     total = int(SR * minutes * 60)
-    clips = [(kind, speak(value, narrator) if kind == "say" else value) for kind, value in items]
+    clips = [(kind, speak(value) if kind == "say" else value) for kind, value in items]
     # Drop the flexible pause after the very last line; the tail covers it.
     while clips and clips[-1][0] == "flex":
         clips.pop()
@@ -699,7 +698,7 @@ def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]], na
     unit = available / weights if weights else 0
     min_flex = min_weight * unit
     print(
-        f"  {narrator}/{mid}: speech {speech:.0f}s of {minutes * 60}s, shortest pause {min_flex:.1f}s,"
+        f"  {mid}: speech {speech:.0f}s of {minutes * 60}s, shortest pause {min_flex:.1f}s,"
         f" long pauses at {long_scale:.0%}"
     )
     if min_flex < FLEX_MIN - 1e-6:
@@ -735,19 +734,18 @@ def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]], na
     return np.clip(mix, -0.99, 0.99)
 
 
-def generate_meditations(narrators: list[str], only: list[str]) -> None:
+def generate_meditations(only: list[str]) -> None:
     print("Meditations")
     scripts = parse_scripts()
-    for narrator in narrators:
-        for category in CATALOG["categories"]:
-            for item in category["meditations"]:
-                mid = item["id"]
-                if only and mid not in only:
-                    continue
-                if mid not in scripts:
-                    raise SystemExit(f"No script for {mid} in {SCRIPTS.name}")
-                audio = build_meditation(mid, item["minutes"], scripts[mid], narrator)
-                encode(audio, OUT_MEDITATIONS / narrator / f"{mid}.m4a", 64000)
+    for category in CATALOG["categories"]:
+        for item in category["meditations"]:
+            mid = item["id"]
+            if only and mid not in only:
+                continue
+            if mid not in scripts:
+                raise SystemExit(f"No script for {mid} in {SCRIPTS.name}")
+            audio = build_meditation(mid, item["minutes"], scripts[mid])
+            encode(audio, OUT_MEDITATIONS / f"{mid}.m4a", 64000)
 
 
 # ---------------------------------------------------------------------------
@@ -759,19 +757,11 @@ def write_audio_map() -> None:
         "// Generated by audio-tools/generate_audio.py. Do not edit by hand.",
         "// Metro only bundles files referenced by a static require(), so every file is listed here.",
         "",
-        f"export const NARRATORS = {json.dumps(list(VOICES))} as const;",
-        "export type Narrator = (typeof NARRATORS)[number];",
-        "",
-        "export const MEDITATION_AUDIO: Record<Narrator, Record<string, number>> = {",
+        "export const MEDITATION_AUDIO: Record<string, number> = {",
     ]
-    for narrator in VOICES:
-        lines.append(f"  {narrator}: {{")
-        for category in CATALOG["categories"]:
-            for item in category["meditations"]:
-                lines.append(
-                    f"    '{item['id']}': require('../../assets/audio/meditations/{narrator}/{item['id']}.m4a'),"
-                )
-        lines.append("  },")
+    for category in CATALOG["categories"]:
+        for item in category["meditations"]:
+            lines.append(f"  '{item['id']}': require('../../assets/audio/meditations/{item['id']}.m4a'),")
     lines += ["};", "", "export const SOUNDSCAPE_AUDIO: Record<string, number> = {"]
     for item in CATALOG["soundscapes"]:
         lines.append(f"  '{item['id']}': require('../../assets/audio/sounds/{item['id']}.m4a'),")
@@ -782,13 +772,12 @@ def write_audio_map() -> None:
 
 
 if __name__ == "__main__":
-    # all | sounds [id ...] | meditations [bella|michael ...] [id ...] | map
+    # all | sounds [id ...] | meditations [id ...] | map
     args = sys.argv[1:]
     target = args[0] if args else "all"
     rest = args[1:]
     if target in ("all", "sounds"):
         generate_sounds(rest if target == "sounds" else [])
     if target in ("all", "meditations"):
-        narrators = [a for a in rest if a in VOICES] or list(VOICES)
-        generate_meditations(narrators, [a for a in rest if a not in VOICES])
+        generate_meditations(rest if target == "meditations" else [])
     write_audio_map()

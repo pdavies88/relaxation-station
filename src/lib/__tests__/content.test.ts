@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
 
-import { CATEGORIES, MEDITATIONS, NARRATORS, SOUNDSCAPES, audioFor, findMeditation } from '../../content/catalog';
+import { CATEGORIES, MEDITATIONS, SOUNDSCAPES, audioFor, findMeditation } from '../../content/catalog';
 import { clampPosition, formatClock } from '../time';
 
 jest.mock('../../content/audio-files', () => {
@@ -8,11 +8,7 @@ jest.mock('../../content/audio-files', () => {
   const ids = catalog.categories.flatMap((c) => c.meditations).map((m) => m.id);
   const sounds = Object.fromEntries(catalog.soundscapes.map((s, i) => [s.id, 100 + i]));
   return {
-    NARRATORS: ['bella', 'michael'],
-    MEDITATION_AUDIO: {
-      bella: Object.fromEntries(ids.map((id, i) => [id, i + 1])),
-      michael: Object.fromEntries(ids.map((id, i) => [id, 200 + i])),
-    },
+    MEDITATION_AUDIO: Object.fromEntries(ids.map((id, i) => [id, i + 1])),
     SOUNDSCAPE_AUDIO: sounds,
   };
 });
@@ -37,11 +33,10 @@ describe('catalog', () => {
   });
 });
 
-describe('narrators', () => {
-  it('offers Bella and Michael, each with their own recording of every meditation', () => {
-    expect(NARRATORS).toEqual(['bella', 'michael']);
-    expect(audioFor('meditation', 'sleep-3', 'bella')).not.toBe(audioFor('meditation', 'sleep-3', 'michael'));
-    expect(audioFor('soundscape', 'lullaby', 'michael')).toBe(audioFor('soundscape', 'lullaby', 'bella'));
+describe('soundscapes', () => {
+  it('has bundled audio for every meditation and soundscape', () => {
+    for (const meditation of MEDITATIONS) expect(audioFor('meditation', meditation.id)).toBeGreaterThan(0);
+    for (const soundscape of SOUNDSCAPES) expect(audioFor('soundscape', soundscape.id)).toBeGreaterThan(0);
   });
 
   it('includes the current soundscapes and none of the retired ones', () => {
