@@ -1,4 +1,4 @@
-import Svg, { Circle, G, Path } from 'react-native-svg';
+import Svg, { Circle, G, Path, Rect } from 'react-native-svg';
 
 /** A simple line icon for each soundscape, drawn on a 32×32 grid in the given color. */
 export function SoundIcon({ id, color, size = 32 }: { id: string; color: string; size?: number }) {
@@ -76,6 +76,23 @@ export function SoundIcon({ id, color, size = 32 }: { id: string; color: string;
           <G {...stroke}>
             <Path d="M16 5c-5 0-8 4-8 9v5l-2 4h20l-2-4v-5c0-5-3-9-8-9z" />
             <Path d="M13 26a3 3 0 0 0 6 0" />
+          </G>
+        );
+      case 'car':
+        return (
+          <G {...stroke}>
+            <Path d="M3 22v-5.5l4-7.5h18l4 7.5V22" />
+            <Path d="M7.5 16.5h17M3 22h3.5M12.5 22h7M25.5 22H29" />
+            <Circle cx={9.5} cy={22.5} r={3} />
+            <Circle cx={22.5} cy={22.5} r={3} />
+          </G>
+        );
+      case 'shush':
+        return (
+          <G {...stroke}>
+            <Path d="M12.5 25.6A11 11 0 1 1 19.5 25.6" />
+            <Path d="M10.5 12q1.5 1.5 3 0M18.5 12q1.5 1.5 3 0M11 20h2M19 20h2" />
+            <Rect x={14} y={15.5} width={4} height={14} rx={2} />
           </G>
         );
       default:

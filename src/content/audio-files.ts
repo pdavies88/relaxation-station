@@ -30,4 +30,6 @@ export const SOUNDSCAPE_AUDIO: Record<string, number> = {
   'fan': require('../../assets/audio/sounds/fan.m4a'),
   'brown-noise': require('../../assets/audio/sounds/brown-noise.m4a'),
   'bells': require('../../assets/audio/sounds/bells.m4a'),
+  'car': require('../../assets/audio/sounds/car.m4a'),
+  'shush': require('../../assets/audio/sounds/shush.m4a'),
 };

@@ -15,7 +15,7 @@ import { useTheme } from '@/hooks/use-theme';
 const FACTS = [
   {
     title: 'Everything is free',
-    body: '15 guided meditations and 10 soundscapes. No accounts, no subscriptions and no ads.',
+    body: '15 guided meditations and 12 soundscapes. No accounts, no subscriptions and no ads.',
   },
   {
     title: 'Works completely offline',

@@ -47,7 +47,7 @@ The app links to the privacy policy and support page from its **About** tab, as 
 ### Promotional text (170 characters)
 
 ```
-15 free guided meditations and 10 soothing soundscapes. No account, no subscription, and it works completely offline, even in airplane mode.
+15 free guided meditations and 12 soothing soundscapes. No account, no subscription, and it works completely offline, even in airplane mode.
 ```
 
 ### Description (4,000 characters)
@@ -65,8 +65,8 @@ GUIDED MEDITATIONS
 Each category has a 3, 5 and 10 minute session, so there's always one that fits.
 
 SOOTHING SOUNDSCAPES
-10 sounds that play on a seamless loop until you stop them, like a sound machine on your nightstand:
-Gentle Rain, Wind Chimes, Ocean Waves, Music Box Lullaby, Heartbeat, Crackling Fire, Guitar Lullaby, Box Fan, Brown Noise and Relaxing Bells.
+12 sounds that play on a seamless loop until you stop them, like a sound machine on your nightstand:
+Gentle Rain, Wind Chimes, Ocean Waves, Music Box Lullaby, Heartbeat, Crackling Fire, Guitar Lullaby, Box Fan, Brown Noise, Relaxing Bells, Car Ride and Gentle Shush. Car Ride and Gentle Shush are made to help little ones nap.
 
 PLAYS WITH YOUR SCREEN LOCKED
 Start a sound, lock your phone and drift off. Pause or stop from the lock screen whenever you like.
@@ -126,7 +126,7 @@ These notes answer Apple's six standard questions for new submissions up front. 
 Available on request: a recording on a physical iPhone showing launch, playing a meditation, starting a soundscape, locking the screen while audio continues, and stopping playback from the lock screen. The app has no account registration or login, no user-generated content, and no paid content or in-app purchases.
 
 2. PURPOSE AND AUDIENCE
-Relaxation Station is a free meditation and sleep sounds app for anyone who wants to relax, manage everyday stress or fall asleep. It offers 15 guided meditations (Sleep, Stress Relief, Breathing, Body Scan and Focus, each in 3, 5 and 10 minute versions) and 10 looping soundscapes such as rain and ocean waves. Many apps in this space need accounts and subscriptions; this one is completely free, private, and works offline.
+Relaxation Station is a free meditation and sleep sounds app for anyone who wants to relax, manage everyday stress or fall asleep. It offers 15 guided meditations (Sleep, Stress Relief, Breathing, Body Scan and Focus, each in 3, 5 and 10 minute versions) and 12 looping soundscapes such as rain and ocean waves. Many apps in this space need accounts and subscriptions; this one is completely free, private, and works offline.
 
 3. SETUP AND TEST INSTRUCTIONS
 No login, keys or setup are needed. All audio is bundled in the app.

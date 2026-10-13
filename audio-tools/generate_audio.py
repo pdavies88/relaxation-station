@@ -558,6 +558,68 @@ def sound_guitar(rng, n):
     return np.stack([left, right], axis=1)
 
 
+def sound_car(rng, n):
+    """A car ride: the deep rumble of tires on a highway, a soft engine hum, and now and then the
+    gentle "ba-dum" of the wheels crossing a seam in the road. Kept dark and steady for naps."""
+    t = np.arange(n) / SR
+
+    def road(r, k):
+        rumble = lowpass(brown(r, k), 180)
+        rumble = rumble / (np.sqrt(np.mean(rumble ** 2)) + 1e-9)
+        tires = bandpass(pink(r, k), 250, 1000)
+        tires = tires / (np.sqrt(np.mean(tires ** 2)) + 1e-9)
+        drift = 0.85 + 0.15 * smooth_noise(r, k, 0.05)
+        return (rumble + 0.25 * tires) * drift
+
+    out = stereo(rng, road, n, 0.4)
+    out = out / (np.sqrt(np.mean(out ** 2)) + 1e-9)
+
+    # Engine: a low hum whose pitch wanders a little, as the speed changes.
+    wander = 1 + 0.02 * (smooth_noise(rng, n, 0.03) - 0.5)
+    phase = 2 * np.pi * np.cumsum(55.0 * wander) / SR
+    engine = np.sin(phase) + 0.5 * np.sin(2 * phase) + 0.2 * np.sin(3 * phase)
+    out += 0.12 * engine[:, None]
+
+    # Road seams: front wheels, then back wheels a moment later.
+    bumps = np.zeros(n)
+    length = int(SR * 0.18)
+    bt = np.arange(length) / SR
+    thump = np.sin(2 * np.pi * 70 * bt) * np.exp(-bt / 0.04) * np.minimum(1, bt / 0.004)
+    at = rng.uniform(2, 6)
+    while at < n / SR - 1:
+        gain = rng.uniform(0.5, 1.0)
+        place(bumps, thump * gain, int(at * SR))
+        place(bumps, thump * gain * 0.8, int((at + rng.uniform(0.11, 0.14)) * SR))
+        at += rng.uniform(5, 14)
+    out += 0.6 * bumps[:, None]
+    return np.stack([lowpass(out[:, 0], 1500), lowpass(out[:, 1], 1500)], axis=1)
+
+
+SHUSH_PERIOD = 2.4  # seconds per "shhh" and pause, about 25 a minute
+
+
+def sound_shush(rng, n):
+    """A soft, steady "shhh... shhh..." like a parent settling a child, over a quiet low whoosh.
+    The loop holds a whole number of shushes, so it repeats without a seam."""
+    count = int(round(n / SR / SHUSH_PERIOD))
+    n = int(round(count * SHUSH_PERIOD * SR))
+    voice = np.zeros(n)
+    length = int(SR * 1.7)
+    st = np.arange(length) / SR
+    # Breath shape: a gentle rise, a steady middle and a slow fade.
+    shape = np.minimum(1, st / 0.35) * np.clip((1.7 - st) / 0.7, 0, 1)
+    for i in range(count):
+        noise = white(rng, length)
+        sh = bandpass(noise, 1800, 4500) + 0.3 * bandpass(noise, 900, 1800)
+        sh = lowpass(sh, 5000) * shape * rng.uniform(0.85, 1.0)
+        place_wrap(voice, sh, int((i * SHUSH_PERIOD + rng.uniform(-0.04, 0.04)) * SR) % n)
+    voice = voice / (np.sqrt(np.mean(voice ** 2)) + 1e-9)
+    bed = circular_filter(pink(rng, n), lambda x: lowpass(x, 500))
+    bed = bed / (np.sqrt(np.mean(bed ** 2)) + 1e-9)
+    mono = voice + 0.35 * bed
+    return np.stack([mono, mono], axis=1)
+
+
 SOUNDS = {
     "rain": sound_rain,
     "chimes": sound_chimes,
@@ -569,13 +631,15 @@ SOUNDS = {
     "fan": sound_fan,
     "brown-noise": sound_brown_noise,
     "bells": sound_bells,
+    "car": sound_car,
+    "shush": sound_shush,
 }
 
 # Sounds built as exact circles (no crossfade needed): their notes and reverb wrap around.
-CIRCULAR_SOUNDS = {"lullaby", "bells", "chimes", "heartbeat", "guitar"}
+CIRCULAR_SOUNDS = {"lullaby", "bells", "chimes", "heartbeat", "guitar", "shush"}
 
 # Per-sound loudness, so the set feels consistent when switching between them.
-SOUND_LEVEL_DB = {"rain": -29, "lullaby": -23, "bells": -24, "chimes": -25, "heartbeat": -22, "guitar": -23, "fan": -21}
+SOUND_LEVEL_DB = {"rain": -29, "lullaby": -23, "bells": -24, "chimes": -25, "heartbeat": -22, "guitar": -23, "fan": -21, "car": -26, "shush": -29}
 
 
 def generate_sounds(only: list[str]) -> None:

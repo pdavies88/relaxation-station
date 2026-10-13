@@ -176,6 +176,16 @@
       "id": "bells",
       "title": "Relaxing Bells",
       "description": "Soft bells and singing bowls."
+    },
+    {
+      "id": "car",
+      "title": "Car Ride",
+      "description": "The low, steady rumble of a drive. Made for naps."
+    },
+    {
+      "id": "shush",
+      "title": "Gentle Shush",
+      "description": "Soft, steady shushing to settle little ones."
     }
   ]
 }

@@ -3,7 +3,7 @@
 Free guided meditations and soothing soundscapes. Everything is built into the app, so it works fully offline, even in airplane mode.
 
 - **15 guided meditations** in five categories: Sleep, Stress Relief, Breathing, Body Scan and Focus. Each category has a 3, 5 and 10 minute session.
-- **10 soundscapes:** Gentle Rain, Wind Chimes, Ocean Waves, Music Box Lullaby, Heartbeat, Crackling Fire, Guitar Lullaby, Box Fan, Brown Noise and Relaxing Bells. Each plays on a seamless loop until you stop it, like a sound machine.
+- **12 soundscapes:** Gentle Rain, Wind Chimes, Ocean Waves, Music Box Lullaby, Heartbeat, Crackling Fire, Guitar Lullaby, Box Fan, Brown Noise, Relaxing Bells, Car Ride and Gentle Shush. Each plays on a seamless loop until you stop it, like a sound machine.
 - **Keeps playing with the screen locked,** with lock screen and notification controls.
 - **No network, no accounts, no data collection.**
 
