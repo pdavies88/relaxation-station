@@ -21,7 +21,7 @@ const ICON_SIZE = 38;
 const ICONS_PER_ROW = 10;
 const ROW_WIDTH = CELL * ICONS_PER_ROW;
 const ROW_COUNT = 7;
-const HERO_HEIGHT = 240;
+export const HERO_HEIGHT = 240;
 /** Shapes are muted so the logo stays the focus. */
 const PATTERN_OPACITY = { light: 0.55, dark: 0.4 };
 

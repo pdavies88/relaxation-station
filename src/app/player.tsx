@@ -55,7 +55,7 @@ export default function PlayerScreen() {
           </View>
         ) : (
           <ThemedText themeColor="textSecondary" style={styles.loopNote}>
-            Plays on repeat until you stop it. You can lock your screen.
+            Lock your screen anytime. The sound keeps playing.
           </ThemedText>
         )}
 

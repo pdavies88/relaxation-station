@@ -1,7 +1,9 @@
 import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, { interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Hero } from '@/components/brand/hero';
+import { HERO_HEIGHT, Hero } from '@/components/brand/hero';
 import { MiniPlayer, PlayPauseIcon } from '@/components/mini-player';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -12,11 +14,25 @@ import { usePlayback } from '@/context/playback-context';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function MeditateScreen() {
+  const theme = useTheme();
+  const insets = useSafeAreaInsets();
   const { track } = usePlayback();
+
+  // The hero runs under the status bar. Once it scrolls away, fade in a solid strip behind the
+  // status bar so the list doesn't collide with the clock.
+  const scrollY = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
+  const statusBarStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(scrollY.value, [HERO_HEIGHT - 80, HERO_HEIGHT], [0, 1], 'clamp'),
+  }));
 
   return (
     <ThemedView style={styles.container}>
-      <ScrollView
+      <Animated.ScrollView
+        onScroll={onScroll}
+        scrollEventThrottle={16}
         contentInsetAdjustmentBehavior="never"
         contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.four + (track ? 104 : 0) }}>
         <Hero />
@@ -42,7 +58,11 @@ export default function MeditateScreen() {
             </View>
           ))}
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
+      <Animated.View
+        pointerEvents="none"
+        style={[styles.statusBar, { height: insets.top, backgroundColor: theme.background }, statusBarStyle]}
+      />
       <MiniPlayer />
     </ThemedView>
   );
@@ -89,6 +109,12 @@ function SessionRow({ meditation }: { meditation: Meditation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  statusBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
   },
   content: {
     padding: Spacing.four,

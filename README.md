@@ -29,7 +29,8 @@ Background playback and lock screen controls need a development or production bu
 | `npm run typecheck` | TypeScript |
 | `npm run lint` | ESLint (eslint-config-expo) |
 | `npm run generate:audio` | Regenerate the meditations and soundscapes (see below) |
-| `npm run generate:brand` | Re-render the app icon and splash from the logo |
+| `npm run generate:brand` | Re-render the app icon, splash, Play icon and website logo |
+| `node scripts/generate-play-assets.mjs` | Re-render the Google Play feature graphic and screenshots |
 
 ## How the audio is made
 
@@ -70,6 +71,17 @@ src/
   lib/                    Small pure helpers with tests
 plugins/
   with-ios-scene-lifecycle.js   Adopts the UIScene life cycle required by the iOS 27 SDK (remove on SDK 58)
+```
+
+## Releasing
+
+- **Website:** `docs/` holds the public home page, privacy policy and support page, served by GitHub Pages.
+- **App Store:** [`store/README.md`](store/README.md) has the build command, listing copy, App Privacy and age rating answers, App Review notes and screenshots.
+- **Google Play:** [`store/android/README.md`](store/android/README.md) has the Play Console steps, including the foreground service declaration that background audio needs.
+
+```bash
+npx eas-cli@latest build --platform ios --profile production --auto-submit
+npx eas-cli@latest build --platform android --profile production
 ```
 
 ## License
