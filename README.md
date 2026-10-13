@@ -37,11 +37,11 @@ Background playback and lock screen controls need a development or production bu
 All audio is generated on a Mac and committed to `assets/audio/`. The app never downloads anything.
 
 - **Catalog:** `content/catalog.json` lists every category, meditation and soundscape. The app and the generator both read it.
-- **Scripts:** `content/meditations.txt` holds the meditation scripts. Lines are spoken, `~` adds a longer pause and `[N]` adds an exact pause of N seconds.
+- **Scripts:** `content/meditations.txt` holds the meditation scripts. Each `## <id> <bed>` header names the background bed (`warm`, `air`, `ocean`, `piano` or `bowls`). Lines are spoken, `~` adds a longer pause and `[N]` adds an exact pause of N seconds.
 - **Generator:** `audio-tools/generate_audio.py`:
-  - speaks each line with the open-source Kokoro text-to-speech model (Apache 2.0) in the voice `af_bella` (Bella)
+  - speaks each line with the open-source Kokoro text-to-speech model (Apache 2.0) in the voice `af_bella` (Bella) at its natural speed, then softens the voice slightly
   - spreads the pauses so every session is exactly 3, 5 or 10 minutes
-  - mixes in a soft drone and a singing bowl at the start and end
+  - mixes the voice over the session's background bed, which dips slightly while Bella speaks, with a singing bowl at the start and end
   - synthesizes the soundscapes from filtered noise and tones, and crossfades each one's end into its start so it loops seamlessly
   - encodes everything to AAC with macOS's `afconvert`
 - **Soundscapes:** the lullaby is Brahms' Lullaby (1868, public domain) on a synthesized music box. The lullaby and bells are built as exact circles, so their notes and reverb wrap around the loop point.

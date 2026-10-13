@@ -7,7 +7,7 @@
 
 Soundscapes are synthesized from filtered noise and tones, and made to loop seamlessly.
 Meditations are spoken by the Kokoro open-source voice model (Apache 2.0), timed to an exact
-length, and mixed over a soft drone with a bell at the start and end. Output is AAC (.m4a),
+length, softened, and mixed over one of several background beds with a bell at the start and end. Output is AAC (.m4a),
 encoded with macOS's built-in afconvert.
 
 Setup (once): see audio-tools/README.md.
@@ -16,6 +16,7 @@ Setup (once): see audio-tools/README.md.
 from __future__ import annotations
 
 import hashlib
+import zlib
 import json
 import re
 import subprocess
@@ -37,11 +38,11 @@ TTS_DIR = ROOT / ".tts"
 TTS_CACHE = TTS_DIR / "cache"
 
 SR = 44100
-# The narrator: Kokoro voice "Bella" (American English), slowed a little for a calm pace, with a
-# short silence between sentences in one line.
+# The narrator: Kokoro voice "Bella" (American English) at her natural speed, with a short silence
+# between sentences in one line.
 VOICE = "af_bella"
 VOICE_LANG = "en-us"
-VOICE_SPEED = 0.74
+VOICE_SPEED = 1.0
 SENTENCE_GAP = 0.45
 
 
@@ -689,23 +690,28 @@ LONG_PAUSE = 8.0  # timed pauses this long are silent practice time, and can shr
 LONG_PAUSE_MIN_SCALE = 0.4  # ...down to 40%. Shorter timed pauses, such as a count of four, never change.
 
 
-def parse_scripts() -> dict[str, list[tuple[str, object]]]:
-    scripts: dict[str, list[tuple[str, object]]] = {}
-    current = None
+def parse_scripts() -> dict[str, tuple[str, list[tuple[str, object]]]]:
+    """Reads content/meditations.txt into {id: (background bed, [(kind, value), ...])}."""
+    scripts: dict[str, tuple[str, list[tuple[str, object]]]] = {}
+    items: list[tuple[str, object]] = []
     for raw in SCRIPTS.read_text().splitlines():
         line = raw.strip()
         if not line or (line.startswith("#") and not line.startswith("##")):
             continue
         if line.startswith("## "):
-            current = line[3:].strip()
-            scripts[current] = []
+            parts = line[3:].split()
+            mid, bed = parts[0], (parts[1] if len(parts) > 1 else "warm")
+            if bed not in BEDS:
+                raise SystemExit(f"{mid}: unknown background bed {bed!r}. Use one of: {', '.join(BEDS)}")
+            items = []
+            scripts[mid] = (bed, items)
         elif line == "~":
-            scripts[current].append(("flex", 3.0))
+            items.append(("flex", 3.0))
         elif re.fullmatch(r"\[\d+(\.\d+)?\]", line):
-            scripts[current].append(("fixed", float(line[1:-1])))
+            items.append(("fixed", float(line[1:-1])))
         else:
-            scripts[current].append(("say", line))
-            scripts[current].append(("flex", 1.0))
+            items.append(("say", line))
+            items.append(("flex", 1.0))
     return scripts
 
 
@@ -759,7 +765,101 @@ def bell(seconds: float = 9.0, base: float = 196.0) -> np.ndarray:
     return tone * attack / np.max(np.abs(tone))
 
 
-def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]]) -> np.ndarray:
+def reverb(x: np.ndarray, rng, seconds: float, wet: float) -> np.ndarray:
+    """A soft room or hall: the signal convolved with a decaying noise burst. Not looped."""
+    length = int(SR * seconds)
+    ir = rng.standard_normal(length) * np.exp(-np.arange(length) / (SR * seconds / 5))
+    ir /= np.sqrt(np.sum(ir ** 2)) + 1e-9
+    return (1 - wet) * x + wet * signal.fftconvolve(x, ir)[: len(x)]
+
+
+def bed_warm(rng, n):
+    """A warm, slowly drifting chord in A major."""
+    return drone(n, n / SR).mean(axis=1)
+
+
+def bed_air(rng, n):
+    """An open, airy chord in D with a soft breath of wind moving through it."""
+    t = np.arange(n) / SR
+    out = np.zeros(n)
+    for i, f in enumerate((146.83, 220.0, 293.66, 369.99, 440.0, 587.33)):
+        swell = 0.5 + 0.5 * np.sin(2 * np.pi * t / rng.uniform(18, 40) + rng.uniform(0, 6))
+        tone = np.sin(2 * np.pi * (f - 0.25) * t) + np.sin(2 * np.pi * (f + 0.25) * t)
+        out += tone * swell / (1 + 0.5 * i)
+    out /= np.sqrt(np.mean(out ** 2)) + 1e-9
+    breath = bandpass(pink(rng, n), 400, 2500) * (0.3 + 0.7 * smooth_noise(rng, n, 0.04))
+    breath /= np.sqrt(np.mean(breath ** 2)) + 1e-9
+    return lowpass(out + 0.3 * breath, 3000)
+
+
+def bed_ocean(rng, n):
+    """Distant, slow waves on a far-off shore."""
+    return lowpass(sound_ocean(rng, n).mean(axis=1), 1000)
+
+
+def piano_note(freq: float, seconds: float = 7.0) -> np.ndarray:
+    """A soft felt piano note: two slightly detuned strings, upper partials fading first."""
+    n = int(SR * seconds)
+    t = np.arange(n) / SR
+    tone = np.zeros(n)
+    for k in range(1, 9):
+        f = k * freq * np.sqrt(1 + 0.0004 * k * k)
+        decay = 3.2 / (1 + 0.6 * (k - 1))
+        for detune in (-0.3, 0.3):
+            tone += np.sin(2 * np.pi * (f + detune) * t) * np.exp(-t / decay) / k ** 1.6
+    return tone * np.minimum(1, t / 0.006) / (np.max(np.abs(tone)) + 1e-9)
+
+
+PIANO_NOTES = [146.83, 164.81, 185.0, 220.0, 246.94, 293.66, 329.63, 369.99, 440.0]  # D major pentatonic
+
+
+def bed_piano(rng, n):
+    """Sparse, unhurried piano notes over a faint low hum, with a little hall."""
+    out = np.zeros(n)
+    at = rng.uniform(1, 3)
+    while at < n / SR:
+        index = int(rng.integers(len(PIANO_NOTES)))
+        gain = rng.uniform(0.4, 0.8)
+        place(out, piano_note(PIANO_NOTES[index]) * gain, int(at * SR))
+        if rng.random() < 0.25:
+            other = PIANO_NOTES[min(index + 2, len(PIANO_NOTES) - 1)]
+            place(out, piano_note(other) * gain * 0.7, int((at + rng.uniform(0.25, 0.5)) * SR))
+        at += rng.uniform(3.5, 7.0)
+    t = np.arange(n) / SR
+    hum = np.sin(2 * np.pi * 73.42 * t) + 0.5 * np.sin(2 * np.pi * 110.0 * t)
+    out = out / (np.sqrt(np.mean(out ** 2)) + 1e-9) + 0.15 * hum
+    return reverb(out, rng, 2.5, 0.35)
+
+
+def bed_bowls(rng, n):
+    """Singing bowls struck now and then, ringing out over a soft low hum."""
+    out = np.zeros(n)
+    at = rng.uniform(1, 4)
+    while at < n / SR:
+        base = float(rng.choice([146.83, 196.0, 220.0, 293.66]))
+        place(out, bell(14.0, base) * rng.uniform(0.6, 1.0), int(at * SR))
+        at += rng.uniform(14, 22)
+    t = np.arange(n) / SR
+    hum = (np.sin(2 * np.pi * 98.0 * t) + 0.6 * np.sin(2 * np.pi * 147.0 * t)) * (0.7 + 0.3 * np.sin(2 * np.pi * 0.05 * t))
+    out = out / (np.sqrt(np.mean(out ** 2)) + 1e-9) + 0.2 * hum
+    return reverb(out, rng, 3.0, 0.25)
+
+
+# Background beds a meditation can use. Each script names one in content/meditations.txt, so a
+# listener hears a different bed from one session to the next.
+BEDS = {"warm": bed_warm, "air": bed_air, "ocean": bed_ocean, "piano": bed_piano, "bowls": bed_bowls}
+BED_LEVEL_DB = -27  # loud enough to hear in the pauses
+BED_DUCK = 0.4  # the bed dips by this much (about 4 dB) while Bella speaks
+
+
+def soften_voice(voice: np.ndarray, rng) -> np.ndarray:
+    """Takes the edge off the voice for a quiet, close sound: less high-end hiss and sibilance,
+    and a touch of soft room around it."""
+    voice = voice - 0.35 * highpass(voice, 5000)
+    return reverb(voice, rng, 0.9, 0.12)
+
+
+def build_meditation(mid: str, minutes: int, bed: str, items: list[tuple[str, object]]) -> np.ndarray:
     total = int(SR * minutes * 60)
     clips = [(kind, speak(value) if kind == "say" else value) for kind, value in items]
     # Drop the flexible pause after the very last line; the tail covers it.
@@ -782,7 +882,7 @@ def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]]) ->
     unit = available / weights if weights else 0
     min_flex = min_weight * unit
     print(
-        f"  {mid}: speech {speech:.0f}s of {minutes * 60}s, shortest pause {min_flex:.1f}s,"
+        f"  {mid} ({bed}): speech {speech:.0f}s of {minutes * 60}s, shortest pause {min_flex:.1f}s,"
         f" long pauses at {long_scale:.0%}"
     )
     if min_flex < FLEX_MIN - 1e-6:
@@ -798,10 +898,15 @@ def build_meditation(mid: str, minutes: int, items: list[tuple[str, object]]) ->
             cursor += clip * long_scale if clip >= LONG_PAUSE else clip
         else:
             cursor += clip * unit
-    voice = voice / (np.max(np.abs(voice)) + 1e-9) * 10 ** (-3 / 20)
+    rng = np.random.default_rng(zlib.crc32(mid.encode()))
+    voice = soften_voice(voice, rng)
+    voice = voice / (np.max(np.abs(voice)) + 1e-9) * 10 ** (-4 / 20)
 
-    pad = drone(total, minutes * 60).mean(axis=1)
-    pad = pad / (np.sqrt(np.mean(pad ** 2)) + 1e-9) * 10 ** (-34 / 20)
+    pad = BEDS[bed](rng, total)
+    pad = pad / (np.sqrt(np.mean(pad ** 2)) + 1e-9) * 10 ** (BED_LEVEL_DB / 20)
+    # Duck the bed gently while Bella is speaking, and let it come back up in the pauses.
+    speaking = (lowpass(np.abs(voice), 4) > 0.01).astype(float)
+    pad *= 1 - BED_DUCK * np.clip(lowpass(speaking, 1.0), 0, 1)
     fade = np.ones(total)
     fade_in, fade_out = int(SR * 6), int(SR * 9)
     fade[:fade_in] = np.linspace(0, 1, fade_in)
@@ -828,7 +933,8 @@ def generate_meditations(only: list[str]) -> None:
                 continue
             if mid not in scripts:
                 raise SystemExit(f"No script for {mid} in {SCRIPTS.name}")
-            audio = build_meditation(mid, item["minutes"], scripts[mid])
+            bed, items = scripts[mid]
+            audio = build_meditation(mid, item["minutes"], bed, items)
             encode(audio, OUT_MEDITATIONS / f"{mid}.m4a", 64000)
 
 
