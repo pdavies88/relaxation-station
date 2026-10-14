@@ -2,7 +2,7 @@
 #
 # Format:
 #   ## <meditation id> <bed>  starts a meditation. Ids match content/catalog.json. The bed is the
-#                            background under the voice: warm, air, ocean, piano or bowls.
+#                            background under the voice: warm, guitar, ocean, piano or flute.
 #   any other line           is spoken, then followed by a short flexible pause
 #   ~                        adds a longer flexible pause
 #   [N]                      adds an exact pause of N seconds (used for breath counts)
@@ -64,7 +64,7 @@ If your mind wanders off, no trouble at all. Just come back to the feeling of be
 Let yourself drift. Let sleep arrive in its own time.
 Goodnight.
 
-## sleep-10 air
+## sleep-10 guitar
 Welcome to Deep Rest. For the next little while, there's nowhere you need to be, and nothing you need to be.
 Lie down and get comfortable. Let your arms rest by your sides, and gently close your eyes.
 ~
@@ -142,7 +142,7 @@ Take one more deep breath in.
 And let it go.
 When you're ready, open your eyes, and take this calm back out into the world with you.
 
-## stress-5 bowls
+## stress-5 flute
 Welcome. For the next few minutes, the rest of the world can wait. It will still be there when you're done.
 Sit or lie down comfortably, and let your eyes close.
 ~
@@ -231,7 +231,7 @@ Take a deep breath in.
 And let it go.
 When you're ready, open your eyes. The lake is always here, whenever you'd like to visit.
 
-## breath-3 air
+## breath-3 guitar
 Welcome to Box Breathing. It's a simple, steady pattern, and a surprisingly powerful one. Many people use it to stay calm in high pressure moments.
 Sit up comfortably, and let your eyes close, or soften your gaze.
 We'll breathe in, hold, breathe out, and hold, each for a count of four. Picture yourself tracing the four sides of a box.
@@ -309,7 +309,7 @@ Now let your breathing return to its natural pace.
 Take a moment to notice how you feel. Perhaps a little calmer, and more at ease.
 When you're ready, open your eyes.
 
-## breath-10 bowls
+## breath-10 flute
 Welcome to Breath of Calm. In this practice, we'll gently stretch out each breath out. A long, slow exhale tells your body that it's safe to relax.
 Find a comfortable position, and close your eyes.
 ~
@@ -369,7 +369,7 @@ Take one more deep breath in.
 And let it go.
 When you're ready, gently open your eyes.
 
-## body-3 bowls
+## body-3 flute
 Hello. Let's take a quick moment to check in with your body, with a little kindness.
 Sit or lie down comfortably, and close your eyes.
 ~
@@ -517,7 +517,7 @@ Take a final deep breath in.
 And let it go.
 Open your eyes. You've got this.
 
-## focus-5 air
+## focus-5 guitar
 Welcome to Single Point. We'll rest your attention on one simple thing, and practice coming back to it, again and again.
 Sit comfortably, with your back upright, but not stiff. Close your eyes.
 ~

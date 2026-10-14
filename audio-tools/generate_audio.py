@@ -38,11 +38,11 @@ TTS_DIR = ROOT / ".tts"
 TTS_CACHE = TTS_DIR / "cache"
 
 SR = 44100
-# The narrator: Kokoro voice "Bella" (American English) at her natural speed, with a short silence
+# The narrator: Kokoro voice "Bella" (American English), slowed to a calm meditation pace, with a short silence
 # between sentences in one line.
 VOICE = "af_bella"
 VOICE_LANG = "en-us"
-VOICE_SPEED = 1.0
+VOICE_SPEED = 0.8
 SENTENCE_GAP = 0.45
 
 
@@ -778,20 +778,6 @@ def bed_warm(rng, n):
     return drone(n, n / SR).mean(axis=1)
 
 
-def bed_air(rng, n):
-    """An open, airy chord in D with a soft breath of wind moving through it."""
-    t = np.arange(n) / SR
-    out = np.zeros(n)
-    for i, f in enumerate((146.83, 220.0, 293.66, 369.99, 440.0, 587.33)):
-        swell = 0.5 + 0.5 * np.sin(2 * np.pi * t / rng.uniform(18, 40) + rng.uniform(0, 6))
-        tone = np.sin(2 * np.pi * (f - 0.25) * t) + np.sin(2 * np.pi * (f + 0.25) * t)
-        out += tone * swell / (1 + 0.5 * i)
-    out /= np.sqrt(np.mean(out ** 2)) + 1e-9
-    breath = bandpass(pink(rng, n), 400, 2500) * (0.3 + 0.7 * smooth_noise(rng, n, 0.04))
-    breath /= np.sqrt(np.mean(breath ** 2)) + 1e-9
-    return lowpass(out + 0.3 * breath, 3000)
-
-
 def bed_ocean(rng, n):
     """Distant, slow waves on a far-off shore."""
     return lowpass(sound_ocean(rng, n).mean(axis=1), 1000)
@@ -814,41 +800,85 @@ PIANO_NOTES = [146.83, 164.81, 185.0, 220.0, 246.94, 293.66, 329.63, 369.99, 440
 
 
 def bed_piano(rng, n):
-    """Sparse, unhurried piano notes over a faint low hum, with a little hall."""
+    """Soft piano in short, connected phrases: a few notes about a second apart that move
+    mostly step by step, then a rest. A faint low hum and a little hall sit underneath."""
     out = np.zeros(n)
     at = rng.uniform(1, 3)
+    index = 4
     while at < n / SR:
-        index = int(rng.integers(len(PIANO_NOTES)))
-        gain = rng.uniform(0.4, 0.8)
-        place(out, piano_note(PIANO_NOTES[index]) * gain, int(at * SR))
-        if rng.random() < 0.25:
-            other = PIANO_NOTES[min(index + 2, len(PIANO_NOTES) - 1)]
-            place(out, piano_note(other) * gain * 0.7, int((at + rng.uniform(0.25, 0.5)) * SR))
-        at += rng.uniform(3.5, 7.0)
+        for note in range(int(rng.integers(4, 8))):
+            index = int(np.clip(index + rng.choice([-2, -1, -1, 1, 1, 2]), 0, len(PIANO_NOTES) - 1))
+            gain = rng.uniform(0.45, 0.75) * (0.8 if note else 1.0)
+            place(out, piano_note(PIANO_NOTES[index]) * gain, int(at * SR))
+            at += rng.uniform(0.9, 1.5)
+        # End the phrase on a soft two-note chord, then rest.
+        place(out, piano_note(PIANO_NOTES[max(index - 2, 0)]) * 0.4, int(at * SR))
+        at += rng.uniform(4.0, 7.0)
     t = np.arange(n) / SR
     hum = np.sin(2 * np.pi * 73.42 * t) + 0.5 * np.sin(2 * np.pi * 110.0 * t)
     out = out / (np.sqrt(np.mean(out ** 2)) + 1e-9) + 0.15 * hum
     return reverb(out, rng, 2.5, 0.35)
 
 
-def bed_bowls(rng, n):
-    """Singing bowls struck now and then, ringing out over a soft low hum."""
+def bed_guitar(rng, n):
+    """Soft fingerpicked guitar: slow chords picked from the bass up and left to ring, with a
+    gentle hall. No melody, so it stays out of the way of the voice."""
     out = np.zeros(n)
-    at = rng.uniform(1, 4)
+    progression = ["C", "Am", "F", "G", "C", "Em", "F", "G"]
+    at = rng.uniform(1, 2)
+    bar = 0
     while at < n / SR:
-        base = float(rng.choice([146.83, 196.0, 220.0, 293.66]))
-        place(out, bell(14.0, base) * rng.uniform(0.6, 1.0), int(at * SR))
-        at += rng.uniform(14, 22)
+        notes = GUITAR_CHORDS[progression[bar % len(progression)]]
+        for step, string in enumerate([0, 1, 2, 3, 2]):
+            pluck = guitar_pluck(note_freq(notes[string]), 5.0, pluck_point=0.22)
+            gain = (0.6 if string == 0 else 0.35) * rng.uniform(0.85, 1.0)
+            place(out, pluck * gain, int((at + step * 0.55 + rng.uniform(-0.02, 0.02)) * SR))
+        at += 5.5 + rng.uniform(-0.2, 0.2)
+        bar += 1
+    return reverb(lowpass(out, 4500), rng, 2.2, 0.3)
+
+
+FLUTE_NOTES = [293.66, 329.63, 369.99, 440.0, 493.88, 587.33, 659.25]  # D major pentatonic
+
+
+def pan_flute(rng, freq: float, seconds: float) -> np.ndarray:
+    """One pan flute note: a pure, hollow tone with a breathy edge, a soft puff at the start,
+    a slow swell and a gentle, delayed vibrato."""
+    n = int(SR * seconds)
     t = np.arange(n) / SR
-    hum = (np.sin(2 * np.pi * 98.0 * t) + 0.6 * np.sin(2 * np.pi * 147.0 * t)) * (0.7 + 0.3 * np.sin(2 * np.pi * 0.05 * t))
-    out = out / (np.sqrt(np.mean(out ** 2)) + 1e-9) + 0.2 * hum
-    return reverb(out, rng, 3.0, 0.25)
+    vibrato = 1 + 0.004 * np.sin(2 * np.pi * 5.0 * t) * np.clip((t - 0.4) / 0.6, 0, 1)
+    phase = 2 * np.pi * np.cumsum(freq * vibrato) / SR
+    tone = np.sin(phase) + 0.1 * np.sin(2 * phase) + 0.05 * np.sin(3 * phase)
+    breath = bandpass(white(rng, n), freq * 0.9, freq * 3.5) * 0.25
+    puff = bandpass(white(rng, n), 800, 4000) * np.exp(-t / 0.04) * 0.4
+    shape = np.minimum(1, t / 0.15) * np.clip((seconds - t) / 0.5, 0, 1)
+    return (tone + breath) * shape + puff * np.minimum(1, t / 0.005)
+
+
+def bed_flute(rng, n):
+    """A pan flute playing slow, simple phrases, mostly step by step, with rests between them
+    and a soft hall. A faint low hum keeps the pauses from feeling empty."""
+    out = np.zeros(n)
+    at = rng.uniform(1, 3)
+    index = 3
+    while at < n / SR:
+        for _ in range(int(rng.integers(3, 6))):
+            index = int(np.clip(index + rng.choice([-2, -1, -1, 1, 1, 2]), 0, len(FLUTE_NOTES) - 1))
+            length = rng.uniform(1.6, 3.0)
+            place(out, pan_flute(rng, FLUTE_NOTES[index], length) * rng.uniform(0.7, 1.0), int(at * SR))
+            at += length + rng.uniform(0.05, 0.3)
+        at += rng.uniform(4.0, 8.0)
+    t = np.arange(n) / SR
+    hum = np.sin(2 * np.pi * 73.42 * t) + 0.5 * np.sin(2 * np.pi * 110.0 * t)
+    out = out / (np.sqrt(np.mean(out ** 2)) + 1e-9) + 0.12 * hum
+    return reverb(out, rng, 2.8, 0.35)
 
 
 # Background beds a meditation can use. Each script names one in content/meditations.txt, so a
 # listener hears a different bed from one session to the next.
-BEDS = {"warm": bed_warm, "air": bed_air, "ocean": bed_ocean, "piano": bed_piano, "bowls": bed_bowls}
+BEDS = {"warm": bed_warm, "guitar": bed_guitar, "ocean": bed_ocean, "piano": bed_piano, "flute": bed_flute}
 BED_LEVEL_DB = -27  # loud enough to hear in the pauses
+BED_TRIM_DB = {"warm": -3, "piano": -3}  # per-bed adjustments, by ear
 BED_DUCK = 0.4  # the bed dips by this much (about 4 dB) while Bella speaks
 
 
@@ -903,7 +933,7 @@ def build_meditation(mid: str, minutes: int, bed: str, items: list[tuple[str, ob
     voice = voice / (np.max(np.abs(voice)) + 1e-9) * 10 ** (-4 / 20)
 
     pad = BEDS[bed](rng, total)
-    pad = pad / (np.sqrt(np.mean(pad ** 2)) + 1e-9) * 10 ** (BED_LEVEL_DB / 20)
+    pad = pad / (np.sqrt(np.mean(pad ** 2)) + 1e-9) * 10 ** ((BED_LEVEL_DB + BED_TRIM_DB.get(bed, 0)) / 20)
     # Duck the bed gently while Bella is speaking, and let it come back up in the pauses.
     speaking = (lowpass(np.abs(voice), 4) > 0.01).astype(float)
     pad *= 1 - BED_DUCK * np.clip(lowpass(speaking, 1.0), 0, 1)
