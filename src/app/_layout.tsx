@@ -1,9 +1,10 @@
 import {
-  Quicksand_500Medium,
-  Quicksand_600SemiBold,
-  Quicksand_700Bold,
+  Manrope_500Medium,
+  Manrope_600SemiBold,
+  Manrope_700Bold,
+  Manrope_800ExtraBold,
   useFonts,
-} from "@expo-google-fonts/quicksand";
+} from "@expo-google-fonts/manrope";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useColorScheme } from "react-native";
@@ -43,9 +44,10 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   // Fonts load at runtime (rather than via the expo-font config plugin) so the app also works in Expo Go.
   const [fontsLoaded, fontError] = useFonts({
-    Quicksand_500Medium,
-    Quicksand_600SemiBold,
-    Quicksand_700Bold,
+    Manrope_500Medium,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
+    Manrope_800ExtraBold,
   });
 
   // The native splash stays up until the overlay renders, so nothing shows in the fallback font.
@@ -61,7 +63,8 @@ export default function RootLayout() {
           <Stack.Screen
             name="player"
             options={{
-              title: "Now playing",
+              title: "",
+              headerTransparent: true,
               presentation: "modal",
               headerRight: () => <HeaderDoneButton />,
             }}

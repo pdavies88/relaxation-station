@@ -1,30 +1,24 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { MiniPlayer } from '@/components/mini-player';
 import { SoundIcon } from '@/components/sound-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { BottomTabInset, DisplayFont, MaxContentWidth, Spacing } from '@/constants/theme';
 import { SOUNDSCAPES, type Soundscape } from '@/content/catalog';
 import { usePlayback } from '@/context/playback-context';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function SoundsScreen() {
-  const { track } = usePlayback();
-
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.container}>
         <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: BottomTabInset + Spacing.four + (track ? 104 : 0) },
-          ]}>
+          contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.four }]}>
           <View style={styles.header}>
             <ThemedText type="subtitle">Sounds</ThemedText>
             <ThemedText themeColor="textSecondary">
-              Tap a sound to start it. It keeps playing, even with your screen locked, until you stop it.
+              Tap a sound to start it. It keeps playing, even with your screen locked. Tap it again to stop.
             </ThemedText>
           </View>
           <View style={styles.grid}>
@@ -34,14 +28,13 @@ export default function SoundsScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
-      <MiniPlayer />
     </ThemedView>
   );
 }
 
 function SoundTile({ soundscape }: { soundscape: Soundscape }) {
   const theme = useTheme();
-  const { track, isPlaying, play, toggle } = usePlayback();
+  const { track, isPlaying, play, stop } = usePlayback();
   const isCurrent = track?.kind === 'soundscape' && track.id === soundscape.id;
   const active = isCurrent && isPlaying;
 
@@ -51,27 +44,27 @@ function SoundTile({ soundscape }: { soundscape: Soundscape }) {
       accessibilityRole="button"
       accessibilityState={{ selected: active }}
       accessibilityLabel={`${soundscape.title}. ${soundscape.description}`}
-      accessibilityHint={active ? 'Pauses this sound' : 'Plays this sound until you stop it'}
-      onPress={() => (isCurrent ? toggle() : play('soundscape', soundscape.id))}>
+      accessibilityHint={active ? 'Stops this sound' : 'Plays this sound until you stop it'}
+      onPress={() => (active ? stop() : play('soundscape', soundscape.id))}>
       {({ pressed }) => (
         <View
           style={[
             styles.tile,
             {
               backgroundColor: active ? theme.tint : theme.backgroundElement,
-              opacity: pressed ? 0.75 : 1,
+              transform: [{ scale: pressed ? 0.97 : 1 }],
             },
           ]}>
           <SoundIcon id={soundscape.id} color={active ? theme.onTint : theme.tint} size={36} />
           <View style={styles.tileText}>
-            <ThemedText type="smallBold" style={{ color: active ? theme.onTint : theme.text }}>
+            <ThemedText style={[styles.tileTitle, { color: active ? theme.onTint : theme.text }]}>
               {soundscape.title}
             </ThemedText>
             <ThemedText
               type="small"
               numberOfLines={3}
               style={{ color: active ? theme.onTint : theme.textSecondary, opacity: active ? 0.85 : 1 }}>
-              {active ? 'Playing · tap to pause' : soundscape.description}
+              {active ? 'Playing · tap to stop' : soundscape.description}
             </ThemedText>
           </View>
         </View>
@@ -105,13 +98,20 @@ const styles = StyleSheet.create({
   },
   tile: {
     flex: 1,
-    minHeight: 150,
-    borderRadius: Spacing.four,
+    minHeight: 160,
+    borderRadius: 24,
     padding: Spacing.three,
     gap: Spacing.three,
     justifyContent: 'space-between',
   },
   tileText: {
     gap: Spacing.half,
+  },
+  tileTitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: DisplayFont.bold,
+    fontWeight: 'normal',
+    letterSpacing: -0.2,
   },
 });

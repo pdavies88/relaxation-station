@@ -43,15 +43,15 @@ export function Button({ title, variant = 'primary', loading = false, disabled, 
 const styles = StyleSheet.create({
   button: {
     minHeight: 52,
-    borderRadius: Spacing.three,
+    borderRadius: 26,
     borderWidth: 1,
     paddingHorizontal: Spacing.four,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
-    fontFamily: DisplayFont.semiBold,
+    fontFamily: DisplayFont.bold,
     fontWeight: 'normal',
-    fontSize: 17,
+    fontSize: 16,
   },
 });

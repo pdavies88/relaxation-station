@@ -4,12 +4,10 @@ import { Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { LogoMark } from '@/components/brand/logo-mark';
-import { MiniPlayer } from '@/components/mini-player';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { APP_NAME, PRIVACY_POLICY_URL, SUPPORT_EMAIL, SUPPORT_URL } from '@/constants/brand';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
-import { usePlayback } from '@/context/playback-context';
 import { useTheme } from '@/hooks/use-theme';
 
 const FACTS = [
@@ -36,19 +34,15 @@ const FACTS = [
 ];
 
 export default function AboutScreen() {
-  const { track } = usePlayback();
   const version = Constants.expoConfig?.version ?? '';
 
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView edges={['top']} style={styles.container}>
         <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: BottomTabInset + Spacing.four + (track ? 104 : 0) },
-          ]}>
+          contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.four }]}>
           <View style={styles.header}>
-            <LogoMark size={72} />
+            <LogoMark size={80} />
             <ThemedText type="subtitle">{APP_NAME}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
               Version {version}
@@ -82,7 +76,6 @@ export default function AboutScreen() {
           </ThemedText>
         </ScrollView>
       </SafeAreaView>
-      <MiniPlayer />
     </ThemedView>
   );
 }
@@ -127,14 +120,14 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
   },
   card: {
-    borderRadius: Spacing.four,
+    borderRadius: 20,
     padding: Spacing.three,
     gap: Spacing.one,
   },
   link: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: Spacing.four,
+    borderRadius: 20,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.three,
   },

@@ -1,29 +1,22 @@
-import { useEffect } from 'react';
-import { StyleSheet, useColorScheme, View } from 'react-native';
-import Animated, {
-  cancelAnimation,
-  Easing,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Svg, { G } from 'react-native-svg';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { CALM_SHAPES } from '@/components/brand/calm-shapes';
+import { Aura } from '@/components/brand/aura';
 import { LogoMark } from '@/components/brand/logo-mark';
+import { ThemedText } from '@/components/themed-text';
+import { APP_NAME, APP_TAGLINE } from '@/constants/brand';
+import { DisplayFont, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-const CELL = 64;
-const ICON_SIZE = 38;
-const ICONS_PER_ROW = 10;
-const ROW_WIDTH = CELL * ICONS_PER_ROW;
-const ROW_COUNT = 7;
-export const HERO_HEIGHT = 240;
-/** Shapes are muted so the logo stays the focus. */
-const PATTERN_OPACITY = { light: 0.55, dark: 0.4 };
+export const HERO_HEIGHT = 300;
+const FADE_HEIGHT = 120;
+
+function greeting(hour: number): string {
+  if (hour >= 5 && hour < 12) return 'Good morning';
+  if (hour >= 12 && hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
 
 export function Hero() {
   const theme = useTheme();
@@ -31,65 +24,33 @@ export function Hero() {
 
   return (
     <View style={[styles.hero, { height: HERO_HEIGHT + insets.top, backgroundColor: theme.heroBackground }]}>
-      <View style={styles.pattern} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        {Array.from({ length: ROW_COUNT }, (_, row) => (
-          <FoodRow key={row} row={row} />
-        ))}
-      </View>
-      <View style={[styles.center, { paddingTop: insets.top }]}>
-        <View style={[styles.halo, { backgroundColor: theme.background }]}>
-          <LogoMark size={96} />
+      <Aura
+        orbs={[
+          { id: 'hero-primary', color: theme.auraPrimary, size: 420, x: '82%', y: '18%', period: 8_000 },
+          { id: 'hero-secondary', color: theme.auraSecondary, size: 300, x: '8%', y: '62%', period: 11_000 },
+        ]}
+      />
+      {/* Fades the hero into the page so there's no hard edge where the list begins. */}
+      <Svg style={styles.fade} width="100%" height={FADE_HEIGHT} pointerEvents="none">
+        <Defs>
+          <LinearGradient id="hero-fade" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={theme.background} stopOpacity={0} />
+            <Stop offset="1" stopColor={theme.background} stopOpacity={1} />
+          </LinearGradient>
+        </Defs>
+        <Rect width="100%" height={FADE_HEIGHT} fill="url(#hero-fade)" />
+      </Svg>
+      <View style={[styles.content, { paddingTop: insets.top + Spacing.four }]}>
+        <View style={styles.brand}>
+          <LogoMark size={32} />
+          <ThemedText style={styles.appName}>{APP_NAME}</ThemedText>
+        </View>
+        <View style={styles.copy}>
+          <ThemedText style={styles.greeting}>{greeting(new Date().getHours())}</ThemedText>
+          <ThemedText themeColor="textSecondary">{APP_TAGLINE}</ThemedText>
         </View>
       </View>
     </View>
-  );
-}
-
-/** One diagonal band of food. Two copies sit side by side so the loop has no visible seam. */
-function FoodRow({ row }: { row: number }) {
-  const reduceMotion = useReducedMotion();
-  const progress = useSharedValue(0);
-  const reverse = row % 2 === 1;
-  // Slightly different speeds per row keep the pattern from looking mechanical.
-  const duration = 38_000 + (row % 3) * 7_000;
-
-  useEffect(() => {
-    if (reduceMotion) return;
-    progress.value = withRepeat(withTiming(1, { duration, easing: Easing.linear }), -1, false);
-    return () => cancelAnimation(progress);
-  }, [reduceMotion, duration, progress]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: reverse ? -ROW_WIDTH * (1 - progress.value) : -ROW_WIDTH * progress.value }],
-  }));
-
-  return (
-    <Animated.View style={[styles.row, { marginLeft: row % 2 === 0 ? 0 : -CELL / 2 }, animatedStyle]}>
-      <FoodRowCanvas row={row} />
-      <FoodRowCanvas row={row} />
-    </Animated.View>
-  );
-}
-
-function FoodRowCanvas({ row }: { row: number }) {
-  const opacity = PATTERN_OPACITY[useColorScheme() === 'dark' ? 'dark' : 'light'];
-  const scale = ICON_SIZE / 48;
-  const inset = (CELL - ICON_SIZE) / 2;
-
-  return (
-    <Svg width={ROW_WIDTH} height={CELL} opacity={opacity}>
-      {Array.from({ length: ICONS_PER_ROW }, (_, index) => {
-        const Shape = CALM_SHAPES[(index + row * 3) % CALM_SHAPES.length];
-        const tilt = ((index * 37 + row * 23) % 50) - 25;
-        return (
-          <G
-            key={index}
-            transform={`translate(${index * CELL + inset} ${inset}) scale(${scale}) rotate(${tilt} 24 24)`}>
-            <Shape />
-          </G>
-        );
-      })}
-    </Svg>
   );
 }
 
@@ -97,27 +58,41 @@ const styles = StyleSheet.create({
   hero: {
     overflow: 'hidden',
   },
-  pattern: {
+  fade: {
     position: 'absolute',
-    top: -CELL * 1.5,
-    left: -CELL * 3,
-    transform: [{ rotate: '-20deg' }],
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
-  row: {
-    flexDirection: 'row',
-    width: ROW_WIDTH * 2,
-  },
-  center: {
+  content: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.three,
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
   },
-  halo: {
-    width: 136,
-    height: 136,
-    borderRadius: 68,
+  brand: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.12)',
+    gap: Spacing.two,
+  },
+  appName: {
+    fontSize: 15,
+    lineHeight: 20,
+    fontFamily: DisplayFont.bold,
+    fontWeight: 'normal',
+    letterSpacing: -0.2,
+  },
+  copy: {
+    gap: Spacing.two,
+  },
+  greeting: {
+    fontSize: 38,
+    lineHeight: 44,
+    fontFamily: DisplayFont.extraBold,
+    fontWeight: 'normal',
+    letterSpacing: -1.2,
   },
 });

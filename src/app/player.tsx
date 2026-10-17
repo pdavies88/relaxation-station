@@ -1,12 +1,11 @@
 import { router } from 'expo-router';
+import { useEffect, useEffectEvent, useState } from 'react';
 import { Pressable, StyleSheet, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
-import { useState } from 'react';
-import Svg, { Path, Text as SvgText } from 'react-native-svg';
+import Svg, { Circle, Defs, Path, RadialGradient, Stop, Text as SvgText } from 'react-native-svg';
 
-import { LogoMark } from '@/components/brand/logo-mark';
+import { Aura } from '@/components/brand/aura';
 import { Button } from '@/components/button';
-import { PlayPauseIcon } from '@/components/mini-player';
-import { SoundIcon } from '@/components/sound-icon';
+import { PlayPauseIcon } from '@/components/play-pause-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { DisplayFont, MaxContentWidth, Spacing } from '@/constants/theme';
@@ -14,11 +13,20 @@ import { SKIP_SECONDS, usePlayback } from '@/context/playback-context';
 import { useTheme } from '@/hooks/use-theme';
 import { formatClock } from '@/lib/time';
 
+const ORB_SIZE = 200;
+
+/** Full-screen player for guided meditations. Soundscapes are started and stopped from their tiles. */
 export default function PlayerScreen() {
   const theme = useTheme();
   const { track, isPlaying, position, duration, finished, toggle, stop, seekBy } = usePlayback();
 
-  if (!track) {
+  // Closing the player (the close button, a swipe down or Android back) ends the meditation.
+  const endMeditation = useEffectEvent(() => {
+    if (track?.kind === 'meditation') stop();
+  });
+  useEffect(() => () => endMeditation(), []);
+
+  if (track?.kind !== 'meditation') {
     return (
       <ThemedView style={[styles.container, styles.center]}>
         <ThemedText themeColor="textSecondary">Nothing is playing.</ThemedText>
@@ -27,72 +35,80 @@ export default function PlayerScreen() {
     );
   }
 
-  const isMeditation = track.kind === 'meditation';
-
   return (
     <ThemedView style={styles.container}>
+      <Aura
+        orbs={[
+          { id: 'player-primary', color: theme.auraPrimary, size: 520, x: '50%', y: '30%', period: 9_000 },
+          { id: 'player-secondary', color: theme.auraSecondary, size: 360, x: '15%', y: '75%', period: 12_000 },
+        ]}
+      />
       <View style={styles.content}>
-        <View style={[styles.art, { backgroundColor: theme.heroBackground }]}>
-          {isMeditation ? <LogoMark size={140} /> : <SoundIcon id={track.id} color={theme.tint} size={120} />}
-        </View>
+        <BreathingOrb />
 
         <View style={styles.titles}>
           <ThemedText style={styles.title}>{track.title}</ThemedText>
           <ThemedText themeColor="textSecondary">{track.subtitle}</ThemedText>
         </View>
 
-        {isMeditation ? (
-          <View style={styles.progress}>
-            <ProgressBar />
-            <View style={styles.times}>
-              <ThemedText type="small" themeColor="textSecondary">
-                {formatClock(position)}
-              </ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                -{formatClock(duration - position)}
-              </ThemedText>
-            </View>
+        <View style={styles.progress}>
+          <ProgressBar />
+          <View style={styles.times}>
+            <ThemedText type="small" themeColor="textSecondary">
+              {formatClock(position)}
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              -{formatClock(duration - position)}
+            </ThemedText>
           </View>
-        ) : (
-          <ThemedText themeColor="textSecondary" style={styles.loopNote}>
-            Lock your screen anytime. The sound keeps playing.
-          </ThemedText>
-        )}
+        </View>
 
-        {finished ? (
-          <ThemedText style={styles.finished}>Session complete. Well done.</ThemedText>
-        ) : null}
+        {finished ? <ThemedText style={styles.finished}>Session complete. Well done.</ThemedText> : null}
 
         <View style={styles.controls}>
-          {isMeditation ? (
-            <SkipButton seconds={-SKIP_SECONDS} onPress={() => seekBy(-SKIP_SECONDS)} />
-          ) : (
-            <View style={styles.skip} />
-          )}
+          <SkipButton seconds={-SKIP_SECONDS} onPress={() => seekBy(-SKIP_SECONDS)} />
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={isPlaying ? 'Pause' : finished ? 'Play again' : 'Play'}
             onPress={toggle}
-            style={({ pressed }) => [styles.play, { backgroundColor: theme.tint, opacity: pressed ? 0.8 : 1 }]}>
-            <PlayPauseIcon playing={isPlaying} color={theme.onTint} size={36} />
+            style={({ pressed }) => [
+              styles.play,
+              { backgroundColor: theme.tint, transform: [{ scale: pressed ? 0.95 : 1 }] },
+            ]}>
+            <PlayPauseIcon playing={isPlaying} color={theme.onTint} size={34} />
           </Pressable>
-          {isMeditation ? (
-            <SkipButton seconds={SKIP_SECONDS} onPress={() => seekBy(SKIP_SECONDS)} />
-          ) : (
-            <View style={styles.skip} />
-          )}
+          <SkipButton seconds={SKIP_SECONDS} onPress={() => seekBy(SKIP_SECONDS)} />
         </View>
 
         <Button
-          title="Stop"
+          title="End session"
           variant="secondary"
-          onPress={() => {
-            stop();
-            router.back();
-          }}
+          // Closing the player ends the meditation, so going back is all this needs to do.
+          onPress={() => router.back()}
         />
       </View>
     </ThemedView>
+  );
+}
+
+/** A soft, lit sphere at the center of the player. */
+function BreathingOrb() {
+  const theme = useTheme();
+  const half = ORB_SIZE / 2;
+  return (
+    <View style={styles.orb} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Svg width={ORB_SIZE} height={ORB_SIZE}>
+        <Defs>
+          <RadialGradient id="player-orb" cx="38%" cy="32%" r="75%">
+            <Stop offset="0" stopColor="#FFFFFF" />
+            <Stop offset="0.45" stopColor={theme.auraSecondary} />
+            <Stop offset="1" stopColor={theme.tint} />
+          </RadialGradient>
+        </Defs>
+        <Circle cx={half} cy={half} r={half - 1} fill="none" stroke={theme.tint} strokeOpacity={0.25} />
+        <Circle cx={half} cy={half} r={half * 0.62} fill="url(#player-orb)" />
+      </Svg>
+    </View>
   );
 }
 
@@ -165,43 +181,37 @@ const styles = StyleSheet.create({
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
   },
-  art: {
+  orb: {
     alignSelf: 'center',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: Spacing.two,
   },
   titles: {
     alignItems: 'center',
     gap: Spacing.one,
   },
   title: {
-    fontSize: 28,
-    lineHeight: 34,
-    fontFamily: DisplayFont.bold,
+    fontSize: 30,
+    lineHeight: 36,
+    fontFamily: DisplayFont.extraBold,
     fontWeight: 'normal',
+    letterSpacing: -0.8,
     textAlign: 'center',
   },
   progress: {
     gap: Spacing.two,
   },
   track: {
-    height: 8,
-    borderRadius: 4,
+    height: 6,
+    borderRadius: 3,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
   },
   times: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  loopNote: {
-    textAlign: 'center',
   },
   finished: {
     textAlign: 'center',
