@@ -2,47 +2,55 @@ import '@/global.css';
 
 import { Platform } from 'react-native';
 
-/** A calm night-sky palette. Every text/background pair passes WCAG AA contrast. */
+/**
+ * Clean neutral surfaces with a soft violet accent. Every text/background pair passes WCAG AA contrast.
+ * The aura colors paint the glowing gradients behind the hero and the player.
+ */
 export const Colors = {
   light: {
-    text: '#1B1838',
-    background: '#F6F4FF',
-    backgroundElement: '#ECE9FB',
-    backgroundSelected: '#DDD8F6',
-    textSecondary: '#5E5A78',
+    text: '#16142B',
+    background: '#FAF9FD',
+    backgroundElement: '#F1EFF8',
+    backgroundSelected: '#E5E1F4',
+    textSecondary: '#5F5B76',
     tint: '#4B3FB5',
     onTint: '#FFFFFF',
     danger: '#B42318',
-    border: '#DDD8F6',
-    heroBackground: '#E6E2FF',
-    /** Raised round controls that sit on a tinted bar, such as the mini player's stop button. */
+    border: '#E5E1F4',
+    heroBackground: '#EEEBFA',
+    auraPrimary: '#A99CFF',
+    auraSecondary: '#F0C6E8',
+    /** Raised controls that sit on a tinted surface, such as the player's stop button. */
     controlSurface: '#FFFFFF',
   },
   dark: {
-    text: '#F2F0FF',
-    background: '#0D0F22',
-    backgroundElement: '#1A1C36',
-    backgroundSelected: '#272A4A',
-    textSecondary: '#ADA9C9',
+    text: '#F3F1FF',
+    background: '#0A0A16',
+    backgroundElement: '#15152A',
+    backgroundSelected: '#22223F',
+    textSecondary: '#A9A6C4',
     tint: '#A99CFF',
     onTint: '#14112E',
     danger: '#FDA29B',
-    border: '#272A4A',
-    heroBackground: '#151838',
-    controlSurface: '#3A3E66',
+    border: '#22223F',
+    heroBackground: '#0F0E22',
+    auraPrimary: '#5B4BD6',
+    auraSecondary: '#8A3F8F',
+    controlSurface: '#22223F',
   },
 } as const;
 
 export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
 
 /**
- * Quicksand gives headings and buttons a soft, rounded look. Body text stays in the system font.
+ * Manrope gives headings and buttons a clean, modern look. Body text stays in the system font.
  * Each weight is its own family, so pair these with fontWeight: 'normal'.
  */
 export const DisplayFont = {
-  medium: 'Quicksand_500Medium',
-  semiBold: 'Quicksand_600SemiBold',
-  bold: 'Quicksand_700Bold',
+  medium: 'Manrope_500Medium',
+  semiBold: 'Manrope_600SemiBold',
+  bold: 'Manrope_700Bold',
+  extraBold: 'Manrope_800ExtraBold',
 } as const;
 
 export const Fonts = Platform.select({
@@ -68,9 +76,4 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 
-/**
- * Distance from the bottom safe-area edge to just above the tab bar. iOS 26+ floats the tab bar
- * above the home indicator, so content that sits over the tab bar needs this much clearance.
- */
-export const TabBarClearance = Platform.select({ ios: 74, android: 84 }) ?? 0;
 export const MaxContentWidth = 800;

@@ -4,10 +4,9 @@ import Animated, { interpolate, useAnimatedScrollHandler, useAnimatedStyle, useS
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { HERO_HEIGHT, Hero } from '@/components/brand/hero';
-import { MiniPlayer, PlayPauseIcon } from '@/components/mini-player';
+import { PlayPauseIcon } from '@/components/play-pause-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { APP_NAME, APP_TAGLINE } from '@/constants/brand';
 import { BottomTabInset, DisplayFont, MaxContentWidth, Spacing } from '@/constants/theme';
 import { CATEGORIES, type Meditation } from '@/content/catalog';
 import { usePlayback } from '@/context/playback-context';
@@ -16,7 +15,6 @@ import { useTheme } from '@/hooks/use-theme';
 export default function MeditateScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { track } = usePlayback();
 
   // The hero runs under the status bar. Once it scrolls away, fade in a solid strip behind the
   // status bar so the list doesn't collide with the clock.
@@ -34,19 +32,12 @@ export default function MeditateScreen() {
         onScroll={onScroll}
         scrollEventThrottle={16}
         contentInsetAdjustmentBehavior="never"
-        contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.four + (track ? 104 : 0) }}>
+        contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.four }}>
         <Hero />
         <View style={styles.content}>
-          <View style={styles.intro}>
-            <ThemedText style={styles.appName}>{APP_NAME}</ThemedText>
-            <ThemedText themeColor="textSecondary" style={styles.tagline}>
-              {APP_TAGLINE}
-            </ThemedText>
-          </View>
-
           {CATEGORIES.map((category) => (
             <View key={category.id} style={styles.category}>
-              <View>
+              <View style={styles.categoryHeader}>
                 <ThemedText style={styles.categoryTitle}>{category.title}</ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   {category.description}
@@ -63,7 +54,6 @@ export default function MeditateScreen() {
         pointerEvents="none"
         style={[styles.statusBar, { height: insets.top, backgroundColor: theme.background }, statusBarStyle]}
       />
-      <MiniPlayer />
     </ThemedView>
   );
 }
@@ -86,20 +76,22 @@ function SessionRow({ meditation }: { meditation: Meditation }) {
       {({ pressed }) => (
         <ThemedView
           type="backgroundElement"
-          style={[styles.row, { borderColor: isCurrent ? theme.tint : 'transparent', opacity: pressed ? 0.75 : 1 }]}>
+          style={[styles.row, { transform: [{ scale: pressed ? 0.98 : 1 }] }]}>
           <View style={[styles.minutes, { backgroundColor: theme.backgroundSelected }]}>
-            <ThemedText style={styles.minutesNumber}>{meditation.minutes}</ThemedText>
-            <ThemedText type="small" themeColor="textSecondary" style={styles.minutesLabel}>
-              min
+            <ThemedText style={[styles.minutesNumber, { color: theme.tint }]}>{meditation.minutes}</ThemedText>
+            <ThemedText themeColor="textSecondary" style={styles.minutesLabel}>
+              MIN
             </ThemedText>
           </View>
           <View style={styles.rowText}>
-            <ThemedText type="smallBold">{meditation.title}</ThemedText>
+            <ThemedText style={styles.rowTitle}>{meditation.title}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary" numberOfLines={2}>
               {meditation.description}
             </ThemedText>
           </View>
-          <PlayPauseIcon playing={isCurrent && isPlaying} color={theme.tint} />
+          <View style={[styles.play, { backgroundColor: theme.tint }]}>
+            <PlayPauseIcon playing={isCurrent && isPlaying} color={theme.onTint} size={16} />
+          </View>
         </ThemedView>
       )}
     </Pressable>
@@ -117,62 +109,70 @@ const styles = StyleSheet.create({
     right: 0,
   },
   content: {
-    padding: Spacing.four,
+    paddingHorizontal: Spacing.four,
+    paddingTop: Spacing.two,
     gap: Spacing.five,
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
   },
-  intro: {
-    gap: Spacing.one,
-    alignItems: 'center',
-  },
-  appName: {
-    fontSize: 34,
-    lineHeight: 42,
-    fontFamily: DisplayFont.bold,
-    fontWeight: 'normal',
-    textAlign: 'center',
-  },
-  tagline: {
-    textAlign: 'center',
-  },
   category: {
-    gap: Spacing.two,
+    gap: Spacing.two + Spacing.one,
+  },
+  categoryHeader: {
+    gap: Spacing.half,
+    marginBottom: Spacing.one,
   },
   categoryTitle: {
     fontSize: 22,
     lineHeight: 28,
     fontFamily: DisplayFont.bold,
     fontWeight: 'normal',
+    letterSpacing: -0.5,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.three,
-    padding: Spacing.three,
-    borderRadius: Spacing.four,
-    borderWidth: 2,
+    padding: Spacing.three - Spacing.one,
+    borderRadius: 20,
   },
   minutes: {
     width: 52,
     height: 52,
-    borderRadius: 26,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   minutesNumber: {
-    fontSize: 20,
-    lineHeight: 22,
-    fontFamily: DisplayFont.bold,
+    fontSize: 18,
+    lineHeight: 20,
+    fontFamily: DisplayFont.extraBold,
     fontWeight: 'normal',
   },
   minutesLabel: {
-    fontSize: 11,
-    lineHeight: 13,
+    fontSize: 9,
+    lineHeight: 12,
+    fontFamily: DisplayFont.bold,
+    fontWeight: 'normal',
+    letterSpacing: 0.8,
   },
   rowText: {
     flex: 1,
     gap: Spacing.half,
+  },
+  rowTitle: {
+    fontSize: 16,
+    lineHeight: 22,
+    fontFamily: DisplayFont.bold,
+    fontWeight: 'normal',
+    letterSpacing: -0.2,
+  },
+  play: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

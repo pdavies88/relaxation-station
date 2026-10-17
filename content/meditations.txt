@@ -14,7 +14,7 @@
 # Voice: warm and professional. Calm, grounded images; a light touch of personality, never silly.
 
 ## sleep-3 ocean
-Hello, and welcome. You've reached the end of the day. Let's take a few quiet minutes to settle in.
+Welcome. You've reached the end of the day. Let's take a few quiet minutes to settle in.
 Lie down and get comfortable, and let your eyes close whenever they're ready.
 ~
 Let's start with a big, slow breath in through your nose.
@@ -120,7 +120,7 @@ You don't need to stay awake for the rest of this. You have full permission to f
 Rest now. Sleep well.
 
 ## stress-3 piano
-Hello. You've found a little pocket of calm in your day. Let's put it to good use.
+You've found a little pocket of calm in your day. Let's put it to good use.
 Sit comfortably, with your feet on the floor. Close your eyes, or rest your gaze on one spot.
 ~
 Take a deep breath in.
@@ -370,7 +370,7 @@ And let it go.
 When you're ready, gently open your eyes.
 
 ## body-3 flute
-Hello. Let's take a quick moment to check in with your body, with a little kindness.
+Let's take a quick moment to check in with your body, with a little kindness.
 Sit or lie down comfortably, and close your eyes.
 ~
 Take a slow breath in.

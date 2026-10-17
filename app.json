@@ -52,7 +52,7 @@
     "android": {
       "package": "com.pdavies.relaxationstation",
       "adaptiveIcon": {
-        "backgroundColor": "#3A2F92",
+        "backgroundColor": "#2B2378",
         "foregroundImage": "./assets/images/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false,
@@ -80,9 +80,9 @@
         {
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 120,
-          "backgroundColor": "#E6E2FF",
+          "backgroundColor": "#EEEBFA",
           "dark": {
-            "backgroundColor": "#151838"
+            "backgroundColor": "#0F0E22"
           }
         }
       ],

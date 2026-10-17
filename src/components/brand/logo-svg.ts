@@ -1,6 +1,6 @@
 /**
- * The Relaxation Station mark: a crescent moon resting above gentle sound waves, with a few stars,
- * on a deep twilight gradient.
+ * The Relaxation Station mark: a softly glowing orb inside two quiet ripples, like one slow breath,
+ * on a deep violet gradient.
  *
  * This file is the single source for the logo. The app renders it with `SvgXml`, and
  * `scripts/generate-brand-assets.mjs` renders the same markup to the app icon and splash PNGs.
@@ -16,26 +16,30 @@ export type LogoSvgOptions = {
 
 export function buildLogoSvg({ cornerRadius = 16, withBackground = true }: LogoSvgOptions = {}): string {
   const background = withBackground
-    ? `<defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0.6" y2="1">
-      <stop offset="0" stop-color="#2A2470"/>
-      <stop offset="0.55" stop-color="#4B3FB5"/>
-      <stop offset="1" stop-color="#2E8FA8"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="${cornerRadius}" fill="url(#sky)"/>`
+    ? `<linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1C1650"/>
+      <stop offset="0.6" stop-color="#3B2F9E"/>
+      <stop offset="1" stop-color="#6A55E0"/>
+    </linearGradient>`
     : '';
 
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  ${background}
-  <circle cx="14" cy="13" r="1.3" fill="#FFF4D6"/>
-  <circle cx="50" cy="11" r="1.1" fill="#FFF4D6"/>
-  <circle cx="45" cy="22" r="0.9" fill="#FFF4D6" opacity="0.8"/>
-  <path d="M9.5 21l1 2.4 2.4 1-2.4 1-1 2.4-1-2.4-2.4-1 2.4-1z" fill="#FFF4D6" opacity="0.9"/>
-  <path d="M35 10a14 14 0 1 0 9 25A16 16 0 0 1 35 10z" fill="#FFD98A"/>
-  <g fill="none" stroke-linecap="round" stroke-width="3">
-    <path d="M10 44c5.5-4.5 11-4.5 16.5 0s11 4.5 16.5 0 7.5-3.5 11-1.5" stroke="#FFFFFF" opacity="0.95"/>
-    <path d="M10 52c5.5-4.5 11-4.5 16.5 0s11 4.5 16.5 0 7.5-3.5 11-1.5" stroke="#A9E4F2" opacity="0.85"/>
-  </g>
+  <defs>
+    ${background}
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#C9BFFF" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#C9BFFF" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="orb" cx="0.38" cy="0.32" r="0.8">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="0.45" stop-color="#E4DEFF"/>
+      <stop offset="1" stop-color="#A99CFF"/>
+    </radialGradient>
+  </defs>
+  ${withBackground ? `<rect width="64" height="64" rx="${cornerRadius}" fill="url(#tile)"/>` : ''}
+  <circle cx="32" cy="32" r="24" fill="url(#glow)"/>
+  <circle cx="32" cy="32" r="21" fill="none" stroke="#E4DEFF" stroke-opacity="0.22" stroke-width="1.2"/>
+  <circle cx="32" cy="32" r="15.5" fill="none" stroke="#E4DEFF" stroke-opacity="0.45" stroke-width="1.2"/>
+  <circle cx="32" cy="32" r="10" fill="url(#orb)"/>
 </svg>`;
 }
