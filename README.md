@@ -67,7 +67,7 @@ audio-tools/              Audio generator (Python, run on a Mac only)
 assets/audio/             Generated meditations and soundscapes (AAC)
 src/
   app/                    Expo Router routes: (tabs)/ Meditate, Sounds, About; player.tsx modal
-  components/             Mini player, sound icons, button; brand/ logo, hero, splash
+  components/             Play/pause icon, sound icons, button; brand/ logo, hero, splash
   content/                Typed catalog and the generated audio map
   context/                Playback: one shared player, background audio, lock screen controls
   lib/                    Small pure helpers with tests

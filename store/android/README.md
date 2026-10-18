@@ -100,7 +100,7 @@ To record the video on an Android phone, use the Screen recorder in quick settin
 
 - Audio keeps playing with the screen off for longer than 3 minutes. Android stops background audio around then if the media notification isn't active.
 - The first time you play something, Android 13 and later ask for notification permission. Allow it so the playback controls appear.
-- The mini player sits above the tab bar, and text isn't clipped.
+- Closing the player stops a meditation, tapping a playing sound tile stops it, and text isn't clipped.
 
 ## Going public later
 

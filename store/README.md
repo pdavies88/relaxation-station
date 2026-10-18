@@ -132,8 +132,8 @@ Relaxation Station is a free meditation and sleep sounds app for anyone who want
 No login, keys or setup are needed. All audio is bundled in the app.
 a. Launch the app. On the Meditate tab, tap any session, for example "Settle In" (3 min). The player opens and the meditation plays.
 b. Lock the iPhone. The meditation keeps playing and shows Now Playing controls on the lock screen.
-c. Unlock, tap Done, open the Sounds tab and tap "Ocean Waves". It replaces the meditation and loops until stopped.
-d. Use the mini player or the player's Stop button to stop playback.
+c. Unlock and tap "End session", or close the player with the X. Closing the player stops the meditation.
+d. Open the Sounds tab and tap "Ocean Waves". It loops until stopped. Tap the tile again, or use the lock screen controls, to stop it.
 e. The About tab links to the privacy policy and support page.
 
 BACKGROUND AUDIO
@@ -160,7 +160,7 @@ Record on a physical iPhone running the latest iOS. Use Control Center → Scree
 1. On the Home Screen, tap the app icon.
 2. Meditate tab: scroll the categories, then tap **Settle In**.
 3. Lock the phone and wake it to show the lock screen controls with audio still playing. Unlock.
-4. Tap **Done**, open **Sounds** and tap **Ocean Waves**. Lock the phone again to show it keeps playing, then stop it from the lock screen.
+4. Tap **End session**, open **Sounds** and tap **Ocean Waves**. Lock the phone again to show it keeps playing, then stop it from the lock screen.
 5. Open **About** and tap **Privacy policy**.
 
 ## Screenshots
@@ -170,7 +170,7 @@ All screenshots come from the iPhone 18 Pro Max simulator with a clean 9:41 stat
 1. `01-meditate.png`: hero, logo and the Sleep sessions
 2. `02-player.png`: a 10-minute meditation playing
 3. `03-sounds.png`: the soundscape grid with Ocean Waves playing
-4. `04-soundscape-player.png`: dark mode soundscape player
+4. `04-player-dark.png`: dark mode meditation player
 5. `05-meditate-dark.png`: dark mode hero
 
 | Folder | Size | App Store Connect slot |

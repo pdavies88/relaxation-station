@@ -9,42 +9,46 @@ import { Resvg } from '@resvg/resvg-js';
 import { buildLogoSvg } from '../src/components/brand/logo-svg.ts';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const quicksand = (weight) =>
-  join(root, `node_modules/@expo-google-fonts/quicksand/${weight}/Quicksand_${weight}.ttf`);
+const manrope = (weight) =>
+  join(root, `node_modules/@expo-google-fonts/manrope/${weight}/Manrope_${weight}.ttf`);
 
-// Feature graphic: 1024 × 500, shown at the top of the Play listing. Matches the app's hero.
-const LOGO_SIZE = 220;
-const logo = buildLogoSvg().replace(
+// Feature graphic: 1024 × 500, shown at the top of the Play listing. Matches the app's dark hero.
+const LOGO_SIZE = 200;
+const logo = buildLogoSvg({ cornerRadius: 14 }).replace(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">',
-  `<svg x="${150 - LOGO_SIZE / 2}" y="${250 - LOGO_SIZE / 2}" width="${LOGO_SIZE}" height="${LOGO_SIZE}" viewBox="0 0 64 64">`,
+  `<svg x="${170 - LOGO_SIZE / 2}" y="${250 - LOGO_SIZE / 2}" width="${LOGO_SIZE}" height="${LOGO_SIZE}" viewBox="0 0 64 64">`,
 );
-
-const dots = [
-  [520, 70, 4, '#FFF4D6'], [960, 90, 6, '#FFD98A'], [880, 430, 5, '#A9E4F2'],
-  [610, 450, 3, '#FFF4D6'], [40, 60, 4, '#FFD98A'], [70, 455, 5, '#A9E4F2'],
-  [990, 300, 3, '#FFF4D6'], [330, 470, 4, '#FFD98A'], [760, 40, 3, '#FFF4D6'], [430, 30, 2, '#FFF4D6'],
-];
 
 const featureGraphic = `<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="500" viewBox="0 0 1024 500">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#151838"/>
-      <stop offset="1" stop-color="#2A2470"/>
-    </linearGradient>
+    <radialGradient id="violet" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#5B4BD6" stop-opacity="0.85"/>
+      <stop offset="0.45" stop-color="#5B4BD6" stop-opacity="0.4"/>
+      <stop offset="1" stop-color="#5B4BD6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rose" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#8A3F8F" stop-opacity="0.8"/>
+      <stop offset="0.45" stop-color="#8A3F8F" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#8A3F8F" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect width="1024" height="500" fill="url(#bg)"/>
-  ${dots.map(([x, y, r, c]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${c}" opacity="0.8"/>`).join('\n  ')}
-  <circle cx="150" cy="250" r="140" fill="#F2F0FF" opacity="0.12"/>
+  <rect width="1024" height="500" fill="#0F0E22"/>
+  <circle cx="880" cy="60" r="360" fill="url(#violet)"/>
+  <circle cx="120" cy="470" r="280" fill="url(#rose)"/>
   ${logo}
-  <text x="330" y="235" font-family="Quicksand" font-weight="700" font-size="72" fill="#F2F0FF">Relaxation Station</text>
-  <text x="334" y="305" font-family="Quicksand" font-weight="500" font-size="38" fill="#C5BCFF">Meditations &amp; soothing sounds</text>
-  <text x="334" y="360" font-family="Quicksand" font-weight="500" font-size="25" fill="#ADA9C9">Free · works offline · plays with your screen locked</text>
+  <text x="330" y="232" font-family="Manrope" font-weight="800" font-size="68" letter-spacing="-2" fill="#F3F1FF">Relaxation Station</text>
+  <text x="333" y="292" font-family="Manrope" font-weight="600" font-size="34" letter-spacing="-0.5" fill="#C9BFFF">Meditations &amp; soothing sounds</text>
+  <text x="333" y="345" font-family="Manrope" font-weight="500" font-size="24" fill="#A9A6C4">Free · works offline · plays with your screen locked</text>
 </svg>`;
 
 const outDir = join(root, 'store/android');
 mkdirSync(outDir, { recursive: true });
 const png = new Resvg(featureGraphic, {
-  font: { fontFiles: [quicksand('700Bold'), quicksand('500Medium')], loadSystemFonts: false, defaultFontFamily: 'Quicksand' },
+  font: {
+    fontFiles: [manrope('800ExtraBold'), manrope('600SemiBold'), manrope('500Medium')],
+    loadSystemFonts: false,
+    defaultFontFamily: 'Manrope',
+  },
 }).render().asPng();
 writeFileSync(join(outDir, 'feature-graphic-1024x500.png'), png);
 console.log('wrote store/android/feature-graphic-1024x500.png');
