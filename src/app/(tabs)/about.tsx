@@ -70,7 +70,7 @@ export default function AboutScreen() {
           </ThemedText>
 
           <ThemedText type="small" themeColor="textSecondary" style={styles.credits}>
-            Meditation voice (Bella) generated with the open-source Kokoro text-to-speech model
+            Meditation voice generated with the open-source Qwen3-TTS text-to-speech model
             (Apache 2.0). The music box lullaby is Brahms’ Lullaby, in the public domain. The guitar lullaby is an original tune. All sounds and music were synthesized
             for this app.
           </ThemedText>

@@ -39,24 +39,23 @@ All audio is generated on a Mac and committed to `assets/audio/`. The app never 
 - **Catalog:** `content/catalog.json` lists every category, meditation and soundscape. The app and the generator both read it.
 - **Scripts:** `content/meditations.txt` holds the meditation scripts. Each `## <id> <bed>` header names the background bed (`warm`, `guitar`, `ocean`, `piano` or `flute`). Lines are spoken, `~` adds a longer pause and `[N]` adds an exact pause of N seconds.
 - **Generator:** `audio-tools/generate_audio.py`:
-  - speaks each line with the open-source Kokoro text-to-speech model (Apache 2.0) in the voice `af_bella` (Bella) at 0.8 speed, then softens the voice slightly
+  - speaks each line with the open-source Qwen3-TTS text-to-speech model (Apache 2.0). The narrator is a gentle female voice. Qwen3-TTS VoiceDesign created her once from a written description, and her clip is kept in `audio-tools/narrator-reference.wav`. The Base model clones that clip for every sentence. The generator speeds each sentence up by 8% without changing its pitch, then softens the voice slightly
   - spreads the pauses so every session is exactly 3, 5 or 10 minutes
-  - mixes the voice over the session's background bed, which dips slightly while Bella speaks, with a singing bowl at the start and end
+  - mixes the voice over the session's background bed, which dips slightly while the narrator speaks, with a singing bowl at the start and end
   - synthesizes the soundscapes from filtered noise and tones, and crossfades each one's end into its start so it loops seamlessly
   - encodes everything to AAC with macOS's `afconvert`
 - **Soundscapes:** the lullaby is Brahms' Lullaby (1868, public domain) on a synthesized music box. The lullaby and bells are built as exact circles, so their notes and reverb wrap around the loop point.
 - **Audio map:** the generator also writes `src/content/audio-files.ts`, the static `require()` map that bundles the files.
 
-One-time generator setup (about 400 MB, kept in the git-ignored `.tts/` folder):
+One-time generator setup. It needs Python 3.12 and an Apple Silicon Mac. The virtual environment lives in the git-ignored `.tts/` folder. The Qwen3-TTS models, about 9 GB, download to the Hugging Face cache on the first run:
 
 ```bash
-python3 -m venv .tts/venv
-.tts/venv/bin/pip install kokoro-onnx soundfile scipy
-curl -L -o .tts/kokoro-v1.0.onnx https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v1.0.onnx
-curl -L -o .tts/voices-v1.0.bin https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin
+python3.12 -m venv .tts/venv
+.tts/venv/bin/pip install qwen-tts soundfile scipy audiotsm
 npm run generate:audio                 # everything
 npm run generate:audio -- meditations sleep-3   # one meditation
 npm run generate:audio -- sounds rain                   # one soundscape
+npm run generate:audio -- voice         # redesign the narrator from VOICE_DESCRIPTION
 ```
 
 ## Project layout

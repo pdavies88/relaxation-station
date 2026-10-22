@@ -4,9 +4,10 @@
     .tts/venv/bin/python audio-tools/generate_audio.py sounds     # soundscapes only
     .tts/venv/bin/python audio-tools/generate_audio.py meditations [id ...]
     .tts/venv/bin/python audio-tools/generate_audio.py sounds [id ...]
+    .tts/venv/bin/python audio-tools/generate_audio.py voice      # redesign the narrator's reference clip
 
 Soundscapes are synthesized from filtered noise and tones, and made to loop seamlessly.
-Meditations are spoken by the Kokoro open-source voice model (Apache 2.0), timed to an exact
+Meditations are spoken by the Qwen3-TTS open-source voice model (Apache 2.0), timed to an exact
 length, softened, and mixed over one of several background beds with a bell at the start and end. Output is AAC (.m4a),
 encoded with macOS's built-in afconvert.
 
@@ -38,12 +39,28 @@ TTS_DIR = ROOT / ".tts"
 TTS_CACHE = TTS_DIR / "cache"
 
 SR = 44100
-# The narrator: Kokoro voice "Bella" (American English), slowed to a calm meditation pace, with a short silence
-# between sentences in one line.
-VOICE = "af_bella"
-VOICE_LANG = "en-us"
-VOICE_SPEED = 0.8
-SENTENCE_GAP = 0.45
+# The narrator: a gentle, soothing female voice. Qwen3-TTS VoiceDesign created her once from the description
+# below, and the clip is kept in NARRATOR_REF. The Qwen3-TTS Base model clones that clip for every sentence, so
+# she sounds the same in every session. Sentences in one line get a short silence between them.
+VOICE_DESIGN_MODEL = "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign"
+VOICE_MODEL = "Qwen/Qwen3-TTS-12Hz-1.7B-Base"
+VOICE_LANG = "English"
+VOICE_DESCRIPTION = (
+    "A gentle, soothing woman in her thirties with a native American English accent, guiding a meditation. "
+    "She speaks softly and slowly, with long relaxed pauses, a warm low-to-medium pitch and a calm, breathy, "
+    "reassuring tone. Never excited, never rushed."
+)
+NARRATOR_REF = ROOT / "audio-tools" / "narrator-reference.wav"
+NARRATOR_REF_TEXT = (
+    "Welcome. Settle in, and let your body grow heavy and still. "
+    "Breathe in slowly through your nose, and gently let the breath go. "
+    "There is nowhere you need to be. Just rest here, softly, in this moment."
+)
+NARRATOR_SEED = 0
+# The cloned voice draws out some words, such as "Welcome." Each sentence is sped up by this much, without
+# changing its pitch.
+VOICE_TEMPO = 1.08
+SENTENCE_GAP = 0.6
 
 
 # ---------------------------------------------------------------------------
@@ -715,7 +732,32 @@ def parse_scripts() -> dict[str, tuple[str, list[tuple[str, object]]]]:
     return scripts
 
 
-_kokoro = None
+_voice = None
+_voice_id = None
+
+
+def load_qwen(name: str):
+    import torch
+    from qwen_tts import Qwen3TTSModel
+
+    device = "mps" if torch.backends.mps.is_available() else "cpu"
+    return Qwen3TTSModel.from_pretrained(name, device_map=device, dtype=torch.bfloat16, attn_implementation="sdpa")
+
+
+def design_voice() -> None:
+    """Creates the narrator's reference clip from VOICE_DESCRIPTION. Run this only to change her voice: every
+    cached sentence depends on the clip, so the cache is cleared too."""
+    import torch
+
+    print("Voice")
+    torch.manual_seed(NARRATOR_SEED)
+    wavs, rate = load_qwen(VOICE_DESIGN_MODEL).generate_voice_design(
+        text=NARRATOR_REF_TEXT, instruct=VOICE_DESCRIPTION, language=VOICE_LANG
+    )
+    sf.write(NARRATOR_REF, wavs[0], rate)
+    for cached in TTS_CACHE.glob("*.npy"):
+        cached.unlink()
+    print(f"  wrote {NARRATOR_REF.relative_to(ROOT)}")
 
 
 def speak(text: str) -> np.ndarray:
@@ -731,22 +773,57 @@ def speak(text: str) -> np.ndarray:
 
 
 def speak_sentence(text: str) -> np.ndarray:
-    """Speaks one sentence with Kokoro, resampled to 44.1 kHz. Results are cached by voice and text."""
-    global _kokoro
-    key = hashlib.sha1(f"{VOICE}|{VOICE_SPEED}|{text}".encode()).hexdigest()
+    """Speaks one sentence in the narrator's voice at VOICE_TEMPO."""
+    return tighten(say_sentence(text), VOICE_TEMPO)
+
+
+def tighten(audio: np.ndarray, tempo: float) -> np.ndarray:
+    """Speeds up speech without changing its pitch (WSOLA, which suits a single voice)."""
+    if tempo == 1.0:
+        return audio
+    from audiotsm import wsola
+    from audiotsm.io.array import ArrayReader, ArrayWriter
+
+    # WSOLA loses a little audio at each end, so pad with silence first and trim it off again after.
+    pad = np.zeros(int(0.2 * SR))
+    writer = ArrayWriter(channels=1)
+    padded = np.concatenate([pad, audio, pad])[np.newaxis, :].astype(np.float32)
+    wsola(channels=1, speed=tempo).run(ArrayReader(padded), writer)
+    out = writer.data[0].astype(np.float64)
+    loud = np.flatnonzero(np.abs(out) > 0.01)
+    return out[max(0, loud[0] - int(0.03 * SR)) : loud[-1] + int(0.08 * SR)] if len(loud) else out
+
+
+def say_sentence(text: str) -> np.ndarray:
+    """Speaks one sentence in the narrator's voice, resampled to 44.1 kHz. Results are cached by voice and text."""
+    global _voice, _voice_id
+    if _voice_id is None:
+        _voice_id = hashlib.sha1(NARRATOR_REF.read_bytes()).hexdigest()
+    key = hashlib.sha1(f"{VOICE_MODEL}|{_voice_id}|{text}".encode()).hexdigest()
     cached = TTS_CACHE / f"{key}.npy"
     if cached.exists():
         return np.load(cached)
-    if _kokoro is None:
-        from kokoro_onnx import Kokoro
+    import torch
 
-        _kokoro = Kokoro(str(TTS_DIR / "kokoro-v1.0.onnx"), str(TTS_DIR / "voices-v1.0.bin"))
-    samples, rate = _kokoro.create(text, voice=VOICE, speed=VOICE_SPEED, lang=VOICE_LANG)
-    audio = signal.resample_poly(np.asarray(samples, dtype=np.float64), SR, rate)
-    # Trim the model's leading and trailing silence so pauses are under our control.
-    loud = np.flatnonzero(np.abs(audio) > 0.01)
-    if len(loud):
-        audio = audio[max(0, loud[0] - int(0.03 * SR)) : loud[-1] + int(0.08 * SR)]
+    if _voice is None:
+        model = load_qwen(VOICE_MODEL)
+        ref, ref_rate = sf.read(NARRATOR_REF)
+        _voice = (model, model.create_voice_clone_prompt(ref_audio=(ref, ref_rate), ref_text=NARRATOR_REF_TEXT))
+    model, prompt = _voice
+    # The model samples, so it can now and then trail off into noise or cut a sentence short. A take far
+    # outside a normal speaking pace is tried again with a new seed.
+    words = len(text.split())
+    for seed in range(5):
+        torch.manual_seed(seed)
+        wavs, rate = model.generate_voice_clone(text=text, language=VOICE_LANG, voice_clone_prompt=prompt)
+        audio = signal.resample_poly(np.asarray(wavs[0], dtype=np.float64), SR, rate)
+        # Trim the model's leading and trailing silence so pauses are under our control.
+        loud = np.flatnonzero(np.abs(audio) > 0.01)
+        if len(loud):
+            audio = audio[max(0, loud[0] - int(0.03 * SR)) : loud[-1] + int(0.08 * SR)]
+        if 0.2 * words <= len(audio) / SR <= 0.8 * words + 1.5:
+            break
+        print(f"    retrying ({len(audio) / SR:.1f}s for {words} words): {text}")
     TTS_CACHE.mkdir(parents=True, exist_ok=True)
     np.save(cached, audio)
     return audio
@@ -879,7 +956,7 @@ def bed_flute(rng, n):
 BEDS = {"warm": bed_warm, "guitar": bed_guitar, "ocean": bed_ocean, "piano": bed_piano, "flute": bed_flute}
 BED_LEVEL_DB = -27  # loud enough to hear in the pauses
 BED_TRIM_DB = {"warm": -3, "piano": -3}  # per-bed adjustments, by ear
-BED_DUCK = 0.4  # the bed dips by this much (about 4 dB) while Bella speaks
+BED_DUCK = 0.4  # the bed dips by this much (about 4 dB) while the narrator speaks
 
 
 def soften_voice(voice: np.ndarray, rng) -> np.ndarray:
@@ -934,7 +1011,7 @@ def build_meditation(mid: str, minutes: int, bed: str, items: list[tuple[str, ob
 
     pad = BEDS[bed](rng, total)
     pad = pad / (np.sqrt(np.mean(pad ** 2)) + 1e-9) * 10 ** ((BED_LEVEL_DB + BED_TRIM_DB.get(bed, 0)) / 20)
-    # Duck the bed gently while Bella is speaking, and let it come back up in the pauses.
+    # Duck the bed gently while the narrator is speaking, and let it come back up in the pauses.
     speaking = (lowpass(np.abs(voice), 4) > 0.01).astype(float)
     pad *= 1 - BED_DUCK * np.clip(lowpass(speaking, 1.0), 0, 1)
     fade = np.ones(total)
@@ -992,10 +1069,13 @@ def write_audio_map() -> None:
 
 
 if __name__ == "__main__":
-    # all | sounds [id ...] | meditations [id ...] | map
+    # all | sounds [id ...] | meditations [id ...] | voice | map
     args = sys.argv[1:]
     target = args[0] if args else "all"
     rest = args[1:]
+    if target == "voice":
+        design_voice()
+        sys.exit()
     if target in ("all", "sounds"):
         generate_sounds(rest if target == "sounds" else [])
     if target in ("all", "meditations"):

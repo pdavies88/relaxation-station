@@ -147,7 +147,7 @@ None. The app works the same in all regions.
 
 6. REGULATED INDUSTRY AND THIRD-PARTY MATERIAL
 The app is not a medical device and makes no medical claims. It provides general relaxation content and states in the app that it is not medical advice or treatment.
-All content was created for this app. The meditation scripts were written for it, and the narration (the voice "Bella") was generated with the open-source Kokoro text-to-speech model (Apache 2.0 license, which permits commercial use). All music and soundscapes were synthesized for the app. No third-party copyrighted material is used.
+All content was created for this app. The meditation scripts were written for it, and the narration was generated with the open-source Qwen3-TTS text-to-speech model (Apache 2.0 license, which permits commercial use). All music and soundscapes were synthesized for the app. No third-party copyrighted material is used.
 
 Privacy policy: https://pdavies88.github.io/relaxation-station/privacy/
 Support: https://pdavies88.github.io/relaxation-station/support/
