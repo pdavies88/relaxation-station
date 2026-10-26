@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Animated, { interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { HERO_HEIGHT, Hero } from '@/components/brand/hero';
+import { Hero, useHeroHeight } from '@/components/brand/hero';
 import { PlayPauseIcon } from '@/components/play-pause-icon';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -15,6 +15,7 @@ import { useTheme } from '@/hooks/use-theme';
 export default function MeditateScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const heroHeight = useHeroHeight();
 
   // The hero runs under the status bar. Once it scrolls away, fade in a solid strip behind the
   // status bar so the list doesn't collide with the clock.
@@ -23,7 +24,7 @@ export default function MeditateScreen() {
     scrollY.value = event.contentOffset.y;
   });
   const statusBarStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [HERO_HEIGHT - 80, HERO_HEIGHT], [0, 1], 'clamp'),
+    opacity: interpolate(scrollY.value, [heroHeight - 80, heroHeight], [0, 1], 'clamp'),
   }));
 
   return (
@@ -34,7 +35,12 @@ export default function MeditateScreen() {
         contentInsetAdjustmentBehavior="never"
         contentContainerStyle={{ paddingBottom: BottomTabInset + Spacing.four }}>
         <Hero />
-        <View style={styles.content}>
+        {/* Keeps the list clear of the Dynamic Island and home indicator in landscape. */}
+        <View
+          style={[
+            styles.content,
+            { paddingLeft: Spacing.four + insets.left, paddingRight: Spacing.four + insets.right },
+          ]}>
           {CATEGORIES.map((category) => (
             <View key={category.id} style={styles.category}>
               <View style={styles.categoryHeader}>
@@ -109,7 +115,6 @@ const styles = StyleSheet.create({
     right: 0,
   },
   content: {
-    paddingHorizontal: Spacing.four,
     paddingTop: Spacing.two,
     gap: Spacing.five,
     width: '100%',

@@ -2,8 +2,8 @@
   "expo": {
     "name": "Relaxation Station",
     "slug": "relaxation-station",
-    "version": "1.1.0",
-    "orientation": "portrait",
+    "version": "1.2.0",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "relaxationstation",
     "userInterfaceStyle": "automatic",
@@ -95,7 +95,6 @@
         }
       ],
       "expo-font",
-      "./plugins/with-ios-scene-lifecycle",
       "expo-asset"
     ],
     "experiments": {

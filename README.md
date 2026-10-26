@@ -7,7 +7,7 @@ Free guided meditations and soothing soundscapes. Everything is built into the a
 - **Keeps playing with the screen locked,** with lock screen and notification controls.
 - **No network, no accounts, no data collection.**
 
-Built with Expo SDK 57, React Native 0.86 (New Architecture), Expo Router, the React Compiler, TypeScript and `expo-audio`.
+Built with Expo SDK 58, React Native 0.88 (New Architecture), Expo Router, the React Compiler, TypeScript and `expo-audio`.
 
 ## Getting started
 
@@ -70,14 +70,15 @@ src/
   content/                Typed catalog and the generated audio map
   context/                Playback: one shared player, background audio, lock screen controls
   lib/                    Small pure helpers with tests
-plugins/
-  with-ios-scene-lifecycle.js   Adopts the UIScene life cycle required by the iOS 27 SDK (remove on SDK 58)
+patches/                  Fixes to dependencies, applied by `npm install`
 ```
+
+`patches/react-native-screens+4.30.0.patch` makes the tab bar appear when the app launches on an unfolded iPhone Duo. It is the fix from [react-native-screens#4990](https://github.com/software-mansion/react-native-screens/pull/4990). `npm install` applies it through `postinstall`. Delete the patch after upgrading to a react-native-screens release that includes the fix.
 
 ## Releasing
 
 - **Website:** `docs/` holds the public home page, privacy policy and support page, served by GitHub Pages.
-- **App Store:** [`store/README.md`](store/README.md) has the build command, listing copy, App Privacy and age rating answers, App Review notes and screenshots.
+- **App Store:** [`store/README.md`](store/README.md) has the build command, listing copy, App Privacy and age rating answers, App Review notes, and the iPhone and iPhone Duo screenshots.
 - **Google Play:** [`store/android/README.md`](store/android/README.md) has the Play Console steps, including the foreground service declaration that background audio needs.
 
 ```bash

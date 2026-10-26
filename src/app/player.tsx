@@ -1,6 +1,15 @@
 import { router } from 'expo-router';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { Pressable, StyleSheet, View, type GestureResponderEvent, type LayoutChangeEvent } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+  type GestureResponderEvent,
+  type LayoutChangeEvent,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Defs, Path, RadialGradient, Stop, Text as SvgText } from 'react-native-svg';
 
 import { Aura } from '@/components/brand/aura';
@@ -14,6 +23,8 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatClock } from '@/lib/time';
 
 const ORB_SIZE = 200;
+/** The orb never takes more than this share of the window's height, so the controls fit in landscape. */
+const MAX_ORB_SHARE = 0.3;
 
 /** Full-screen player for guided meditations. Soundscapes are started and stopped from their tiles. */
 export default function PlayerScreen() {
@@ -43,50 +54,55 @@ export default function PlayerScreen() {
           { id: 'player-secondary', color: theme.auraSecondary, size: 360, x: '15%', y: '75%', period: 12_000 },
         ]}
       />
-      <View style={styles.content}>
-        <BreathingOrb />
+      {/* Pads only the sides that touch a safe area. On an unfolded iPhone Duo the player is a sheet that
+          doesn't reach the window's right edge, so the window's insets would push it off-center. */}
+      <SafeAreaView edges={['left', 'right']} style={styles.container}>
+        {/* Scrolls only when the window is too short for everything, such as a phone in landscape. */}
+        <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
+          <BreathingOrb />
 
-        <View style={styles.titles}>
-          <ThemedText style={styles.title}>{track.title}</ThemedText>
-          <ThemedText themeColor="textSecondary">{track.subtitle}</ThemedText>
-        </View>
-
-        <View style={styles.progress}>
-          <ProgressBar />
-          <View style={styles.times}>
-            <ThemedText type="small" themeColor="textSecondary">
-              {formatClock(position)}
-            </ThemedText>
-            <ThemedText type="small" themeColor="textSecondary">
-              -{formatClock(duration - position)}
-            </ThemedText>
+          <View style={styles.titles}>
+            <ThemedText style={styles.title}>{track.title}</ThemedText>
+            <ThemedText themeColor="textSecondary">{track.subtitle}</ThemedText>
           </View>
-        </View>
 
-        {finished ? <ThemedText style={styles.finished}>Session complete. Well done.</ThemedText> : null}
+          <View style={styles.progress}>
+            <ProgressBar />
+            <View style={styles.times}>
+              <ThemedText type="small" themeColor="textSecondary">
+                {formatClock(position)}
+              </ThemedText>
+              <ThemedText type="small" themeColor="textSecondary">
+                -{formatClock(duration - position)}
+              </ThemedText>
+            </View>
+          </View>
 
-        <View style={styles.controls}>
-          <SkipButton seconds={-SKIP_SECONDS} onPress={() => seekBy(-SKIP_SECONDS)} />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={isPlaying ? 'Pause' : finished ? 'Play again' : 'Play'}
-            onPress={toggle}
-            style={({ pressed }) => [
-              styles.play,
-              { backgroundColor: theme.tint, transform: [{ scale: pressed ? 0.95 : 1 }] },
-            ]}>
-            <PlayPauseIcon playing={isPlaying} color={theme.onTint} size={34} />
-          </Pressable>
-          <SkipButton seconds={SKIP_SECONDS} onPress={() => seekBy(SKIP_SECONDS)} />
-        </View>
+          {finished ? <ThemedText style={styles.finished}>Session complete. Well done.</ThemedText> : null}
 
-        <Button
-          title="End session"
-          variant="secondary"
-          // Closing the player ends the meditation, so going back is all this needs to do.
-          onPress={() => router.back()}
-        />
-      </View>
+          <View style={styles.controls}>
+            <SkipButton seconds={-SKIP_SECONDS} onPress={() => seekBy(-SKIP_SECONDS)} />
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={isPlaying ? 'Pause' : finished ? 'Play again' : 'Play'}
+              onPress={toggle}
+              style={({ pressed }) => [
+                styles.play,
+                { backgroundColor: theme.tint, transform: [{ scale: pressed ? 0.95 : 1 }] },
+              ]}>
+              <PlayPauseIcon playing={isPlaying} color={theme.onTint} size={34} />
+            </Pressable>
+            <SkipButton seconds={SKIP_SECONDS} onPress={() => seekBy(SKIP_SECONDS)} />
+          </View>
+
+          <Button
+            title="End session"
+            variant="secondary"
+            // Closing the player ends the meditation, so going back is all this needs to do.
+            onPress={() => router.back()}
+          />
+        </ScrollView>
+      </SafeAreaView>
     </ThemedView>
   );
 }
@@ -94,10 +110,12 @@ export default function PlayerScreen() {
 /** A soft, lit sphere at the center of the player. */
 function BreathingOrb() {
   const theme = useTheme();
-  const half = ORB_SIZE / 2;
+  const window = useWindowDimensions();
+  const size = Math.min(ORB_SIZE, window.height * MAX_ORB_SHARE);
+  const half = size / 2;
   return (
     <View style={styles.orb} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <Svg width={ORB_SIZE} height={ORB_SIZE}>
+      <Svg width={size} height={size}>
         <Defs>
           <RadialGradient id="player-orb" cx="38%" cy="32%" r="75%">
             <Stop offset="0" stopColor="#FFFFFF" />
@@ -173,7 +191,7 @@ const styles = StyleSheet.create({
     gap: Spacing.three,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     padding: Spacing.four,
     gap: Spacing.four,
     justifyContent: 'center',

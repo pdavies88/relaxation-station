@@ -38,7 +38,7 @@ export default function AboutScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView edges={['top']} style={styles.container}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
         <ScrollView
           contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.four }]}>
           <View style={styles.header}>

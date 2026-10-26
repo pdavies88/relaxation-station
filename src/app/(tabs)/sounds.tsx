@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { SoundIcon } from '@/components/sound-icon';
@@ -9,10 +9,16 @@ import { SOUNDSCAPES, type Soundscape } from '@/content/catalog';
 import { usePlayback } from '@/context/playback-context';
 import { useTheme } from '@/hooks/use-theme';
 
+/** Windows at least this wide, such as an unfolded iPhone Duo or a phone in landscape, get three columns. */
+const WIDE_WINDOW = 600;
+
 export default function SoundsScreen() {
+  const window = useWindowDimensions();
+  const tileWidth = window.width >= WIDE_WINDOW ? '30%' : '47%';
+
   return (
     <ThemedView style={styles.container}>
-      <SafeAreaView edges={['top']} style={styles.container}>
+      <SafeAreaView edges={['top', 'left', 'right']} style={styles.container}>
         <ScrollView
           contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + Spacing.four }]}>
           <View style={styles.header}>
@@ -23,7 +29,9 @@ export default function SoundsScreen() {
           </View>
           <View style={styles.grid}>
             {SOUNDSCAPES.map((soundscape) => (
-              <SoundTile key={soundscape.id} soundscape={soundscape} />
+              <View key={soundscape.id} style={[styles.tileSlot, { width: tileWidth }]}>
+                <SoundTile soundscape={soundscape} />
+              </View>
             ))}
           </View>
         </ScrollView>
@@ -92,9 +100,11 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.three,
   },
-  tilePressable: {
-    width: '47%',
+  tileSlot: {
     flexGrow: 1,
+  },
+  tilePressable: {
+    flex: 1,
   },
   tile: {
     flex: 1,

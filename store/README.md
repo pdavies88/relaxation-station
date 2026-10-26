@@ -6,7 +6,7 @@ Everything App Store Connect asks for, ready to paste. Fill these in on the **we
 
 - [ ] Repo is public and GitHub Pages serves `docs/`, so the URLs below open.
 - [ ] A TestFlight build plays a meditation and a soundscape with the screen locked on a real iPhone.
-- [ ] Version page: build selected, screenshots, description, keywords, support URL, copyright.
+- [ ] Version page: build selected, iPhone and iPhone Duo screenshots, promotional text, What's New, description, keywords, support URL, copyright.
 - [ ] App Information: categories, content rights, age rating.
 - [ ] App Privacy: "Data Not Collected", then **Publish**.
 - [ ] Regulated medical device: **No**.
@@ -19,6 +19,8 @@ Everything App Store Connect asks for, ready to paste. Fill these in on the **we
 ```bash
 npx eas-cli@latest build --platform ios --profile production --auto-submit
 ```
+
+Version 1.2.0 is the Expo SDK 58 build. `eas.json` pins the production iOS build to the `sdk-58` image, which uses Xcode 27.1 and the iOS 27.1 SDK. Apple treats only builds from Xcode 27.1 or later as iPhone Duo-optimized. Check the **Spin up build environment** step in the EAS log to confirm the Xcode version.
 
 On the first run, EAS asks which Expo account owns the project. You're signed in to two, `preston5` and `prestonbuilds`. Whatcha Eatin' uses `preston5`, so pick that one unless you want this app under the other account. EAS then asks to sign in to Apple and creates the signing certificate, provisioning profile and App Store Connect record. Commit the `extra.eas.projectId` it adds to `app.json`.
 
@@ -47,7 +49,17 @@ The app links to the privacy policy and support page from its **About** tab, as 
 ### Promotional text (170 characters)
 
 ```
-15 free guided meditations and 12 soothing soundscapes. No account, no subscription, and it works completely offline, even in airplane mode.
+Now optimized for iPhone Duo. 15 free guided meditations and 12 soothing soundscapes. No account, no subscription, and it works completely offline.
+```
+
+### What's New in 1.2.0 (4,000 characters)
+
+```
+Relaxation Station is now optimized for iPhone Duo. Use it folded or unfolded, upright or sideways, and it fills the screen you are using.
+
+You can now turn any iPhone sideways, too. Meditations and sounds keep playing as the screen rotates.
+
+Also updated for iOS 27.
 ```
 
 ### Description (4,000 characters)
@@ -165,7 +177,7 @@ Record on a physical iPhone running the latest iOS. Use Control Center → Scree
 
 ## Screenshots
 
-All screenshots come from the iPhone 18 Pro Max simulator with a clean 9:41 status bar. Upload in this order:
+All screenshots come from a Release build of version 1.2.0 with a clean 9:41 status bar, captured on October 26, 2026. A Release build shows no developer banner. Upload each set in this order:
 
 1. `01-meditate.png`: hero, logo and the Sleep sessions
 2. `02-player.png`: a 10-minute meditation playing
@@ -175,10 +187,37 @@ All screenshots come from the iPhone 18 Pro Max simulator with a clean 9:41 stat
 
 | Folder | Size | App Store Connect slot |
 | --- | --- | --- |
-| `screenshots/` | 1320 × 2868 | 6.9" display |
-| `screenshots/6.3-inch/` | 1206 × 2622 | 6.1" / 6.3" display |
+| `screenshots/` | 1320 × 2868 | 6.9" display, from the iPhone 18 Pro Max simulator |
+| `screenshots/6.3-inch/` | 1206 × 2622 | 6.1" / 6.3" display, resized from the 6.9" set |
+| `screenshots/iphone-duo/` | 2853 × 2007 | iPhone Duo, the unfolded inner display in landscape |
 
-To retake them, run the app on the iPhone 18 Pro Max simulator. Set the status bar with `xcrun simctl status_bar booted override --time 9:41 --batteryState discharging --batteryLevel 100`. Save each screen with `xcrun simctl io booted screenshot <file>.png`, writing **outside** the project while Metro runs, because new files in the project reload the app. Make the 6.3" copies with `for f in 0*.png; do sips -z 2622 1206 "$f" --out "6.3-inch/$f"; done` from `store/screenshots/`.
+### iPhone Duo screenshots
+
+Uploading the `iphone-duo/` set adds a badge to the product page saying the app is optimized for iPhone Duo. From April 2027, every submission must include iPhone Duo screenshots. Check the 2853 × 2007 size against App Store Connect's iPhone Duo specifications before you upload.
+
+Unfolded, the tabs run down the right edge, and the player opens as a sheet beside the Meditate list. The Sounds grid shows three columns.
+
+### Retaking screenshots
+
+1. Build a Release version: `npx expo run:ios --configuration Release --device <UDID>`. Install the same `.app` on the other simulator with `xcrun simctl install <UDID> <path to RelaxationStation.app>`.
+2. Unfold the iPhone Duo simulator in Device Hub before you launch the app.
+3. Set the status bar with `xcrun simctl status_bar <UDID> override --time 9:41 --batteryState discharging --batteryLevel 100`.
+4. Switch themes with `xcrun simctl ui <UDID> appearance dark` or `light`.
+5. Save each screen with `xcrun simctl io <UDID> screenshot <file>.png`. Write outside the project if Metro is running, because new files in the project reload a debug app.
+6. Make the 6.3" copies with `for f in 0*.png; do sips -z 2622 1206 "$f" --out "6.3-inch/$f"; done` from `store/screenshots/`.
+
+For the player shots, tap the forward button eight times so the progress bar reads about 2:15.
+
+## iPhone Duo
+
+Apple treats a build as optimized for iPhone Duo when it's made with Xcode 27.1 (the iOS 27.1 SDK) or later. Older builds run in a smaller window on the inner display.
+
+What the app does on iPhone Duo:
+
+- **Inner display:** the app fills the screen. Content stays centered with a maximum width of 800 points, and the tabs run down the right edge.
+- **Short windows:** in landscape on the outer display, the hero shrinks and the player scrolls. The code handles this, but nobody has checked it on the simulator yet.
+- **Cold launch while unfolded:** `patches/react-native-screens+4.30.0.patch` makes the tab bar appear. Without it, the tab bar is missing until the device folds or rotates. See the main README.
+- **Not yet tested:** the outer display in landscape, and folding while a meditation plays.
 
 ## After approval
 

@@ -8,7 +8,10 @@
       "distribution": "internal"
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "ios": {
+        "image": "sdk-58"
+      }
     }
   },
   "submit": {

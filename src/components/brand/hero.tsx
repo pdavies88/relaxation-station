@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
@@ -9,8 +9,16 @@ import { APP_NAME, APP_TAGLINE } from '@/constants/brand';
 import { DisplayFont, MaxContentWidth, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export const HERO_HEIGHT = 300;
+const HERO_HEIGHT = 300;
+/** In short windows, such as a phone in landscape, the hero gives up space to the list below it. */
+const MAX_HERO_SHARE = 0.4;
 const FADE_HEIGHT = 120;
+
+/** The hero's height below the status bar. It shrinks in short windows. */
+export function useHeroHeight() {
+  const window = useWindowDimensions();
+  return Math.min(HERO_HEIGHT, window.height * MAX_HERO_SHARE);
+}
 
 function greeting(hour: number): string {
   if (hour >= 5 && hour < 12) return 'Good morning';
@@ -21,9 +29,10 @@ function greeting(hour: number): string {
 export function Hero() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const height = useHeroHeight();
 
   return (
-    <View style={[styles.hero, { height: HERO_HEIGHT + insets.top, backgroundColor: theme.heroBackground }]}>
+    <View style={[styles.hero, { minHeight: height + insets.top, backgroundColor: theme.heroBackground }]}>
       <Aura
         orbs={[
           { id: 'hero-primary', color: theme.auraPrimary, size: 420, x: '82%', y: '18%', period: 8_000 },
@@ -40,7 +49,16 @@ export function Hero() {
         </Defs>
         <Rect width="100%" height={FADE_HEIGHT} fill="url(#hero-fade)" />
       </Svg>
-      <View style={[styles.content, { paddingTop: insets.top + Spacing.four }]}>
+      <View
+        style={[
+          styles.content,
+          {
+            paddingTop: insets.top + Spacing.four,
+            // Keeps the text clear of the Dynamic Island in landscape.
+            paddingLeft: insets.left + Spacing.four,
+            paddingRight: insets.right + Spacing.four,
+          },
+        ]}>
         <View style={styles.brand}>
           <LogoMark size={32} />
           <ThemedText style={styles.appName}>{APP_NAME}</ThemedText>
@@ -65,9 +83,9 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
   content: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'space-between',
-    paddingHorizontal: Spacing.four,
+    gap: Spacing.three,
     paddingBottom: Spacing.three,
     width: '100%',
     maxWidth: MaxContentWidth,
