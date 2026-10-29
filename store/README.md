@@ -11,7 +11,7 @@ Everything App Store Connect asks for, ready to paste. Fill these in on the **we
 - [ ] App Privacy: "Data Not Collected", then **Publish**.
 - [ ] Regulated medical device: **No**.
 - [ ] Pricing and Availability: Free.
-- [ ] App Review notes pasted. A screen recording is attached if Apple asks for one.
+- [ ] Screen recording from a physical iPhone attached in App Review Information, and the App Review notes pasted.
 - [ ] **Add for Review → Submit to App Review**.
 
 ## Build and upload
@@ -52,12 +52,12 @@ The app links to the privacy policy and support page from its **About** tab, as 
 Now optimized for iPhone Duo. 15 free guided meditations and 12 soothing soundscapes. No account, no subscription, and it works completely offline.
 ```
 
-### What's New in 1.2.0 (4,000 characters)
+### What's New in 1.2.1 (4,000 characters)
 
 ```
 Relaxation Station is now optimized for iPhone Duo. Use it folded or unfolded, upright or sideways, and it fills the screen you are using.
 
-You can now turn any iPhone sideways, too. Meditations and sounds keep playing as the screen rotates.
+You can now turn any iPhone sideways, too. In landscape the player shows its controls beside the breathing orb, and meditations and sounds keep playing as the screen rotates.
 
 Also updated for iOS 27.
 ```
@@ -131,14 +131,19 @@ Expected result: the lowest age rating (4+).
 
 ### Notes
 
-These notes answer Apple's six standard questions for new submissions up front. Paste them into the **Notes** field. If Apple asks for more information, paste them as your reply too. They're well under the 4,000 character limit.
+These notes answer Apple's six "Guideline 2.1 - Information Needed" questions for new developer accounts up front, so App Review doesn't have to ask. Before you submit, record the screen recording below and attach it in **App Review Information → Attachment**. Then paste this text into the **Notes** field. If Apple still asks for information, paste the same text as your reply and attach the recording again. The text is about 3,000 characters, under the 4,000 limit.
 
 ```
+WHAT'S NEW IN 1.2.1
+- Optimized for iPhone Duo. The layout adapts to the inner and outer displays, folded or unfolded. On the unfolded display the tab bar runs down the right edge and the player opens as a sheet.
+- The app now rotates on every iPhone. In landscape the player shows the controls beside the breathing orb, so every control stays on screen.
+- Built with the iOS 27.1 SDK.
+
 1. SCREEN RECORDING
-Available on request: a recording on a physical iPhone showing launch, playing a meditation, starting a soundscape, locking the screen while audio continues, and stopping playback from the lock screen. The app has no account registration or login, no user-generated content, and no paid content or in-app purchases.
+Attached: a recording on a physical iPhone running the latest iOS, starting from launch. It shows playing a meditation, locking the screen while audio continues, the lock screen controls, starting and stopping a soundscape, and the About tab. The app has no account registration or login, no user-generated content, and no paid content or in-app purchases.
 
 2. PURPOSE AND AUDIENCE
-Relaxation Station is a free meditation and sleep sounds app for anyone who wants to relax, manage everyday stress or fall asleep. It offers 15 guided meditations (Sleep, Stress Relief, Breathing, Body Scan and Focus, each in 3, 5 and 10 minute versions) and 12 looping soundscapes such as rain and ocean waves. Many apps in this space need accounts and subscriptions; this one is completely free, private, and works offline.
+Relaxation Station is a free meditation and sleep sounds app for anyone who wants to relax, manage everyday stress or fall asleep. It offers 15 guided meditations written and narrated for this app (Sleep, Stress Relief, Breathing, Body Scan and Focus, each in 3, 5 and 10 minute versions) and 12 looping soundscapes made for it, such as rain and ocean waves. Most apps in this category require an account, a subscription or an internet connection. This one is completely free, has no ads or tracking, and plays everything offline.
 
 3. SETUP AND TEST INSTRUCTIONS
 No login, keys or setup are needed. All audio is bundled in the app.
@@ -159,21 +164,21 @@ None. The app works the same in all regions.
 
 6. REGULATED INDUSTRY AND THIRD-PARTY MATERIAL
 The app is not a medical device and makes no medical claims. It provides general relaxation content and states in the app that it is not medical advice or treatment.
-All content was created for this app. The meditation scripts were written for it, and the narration was generated with the open-source Qwen3-TTS text-to-speech model (Apache 2.0 license, which permits commercial use). All music and soundscapes were synthesized for the app. No third-party copyrighted material is used.
-
-Privacy policy: https://pdavies88.github.io/relaxation-station/privacy/
-Support: https://pdavies88.github.io/relaxation-station/support/
+All content was created for this app. The meditation scripts were written for it, and the narration was generated with the open-source Qwen3-TTS text-to-speech model (Apache 2.0 license, which permits commercial use). All music and soundscapes were synthesized for the app. "Music Box Lullaby" is a new recording of Brahms' Lullaby (1868), which is in the public domain. No third-party copyrighted material is used.
 ```
 
-### Screen recording, if Apple asks
+### Screen recording to attach
 
-Record on a physical iPhone running the latest iOS. Use Control Center → Screen Recording, or QuickTime with the iPhone connected.
+Record on a physical iPhone running the latest iOS, in about 2 minutes. Install the submitted build from TestFlight first.
 
-1. On the Home Screen, tap the app icon.
-2. Meditate tab: scroll the categories, then tap **Settle In**.
-3. Lock the phone and wake it to show the lock screen controls with audio still playing. Unlock.
-4. Tap **End session**, open **Sounds** and tap **Ocean Waves**. Lock the phone again to show it keeps playing, then stop it from the lock screen.
-5. Open **About** and tap **Privacy policy**.
+1. Add **Screen Recording** to Control Center (Settings → Control Center) if it isn't there. Start a recording from Control Center.
+2. On the Home Screen, tap the app icon.
+3. Meditate tab: scroll the categories, then tap **Settle In**.
+4. Lock the phone, then wake it to show the lock screen controls with audio still playing. Unlock.
+5. Turn the phone sideways to show the player in landscape, then turn it back.
+6. Tap **End session**, open **Sounds** and tap **Ocean Waves**. Lock the phone again to show it keeps playing, then stop it from the lock screen.
+7. Open **About** and tap **Privacy policy**.
+8. Stop the recording. It's saved to Photos. AirDrop it to your Mac and attach it in App Store Connect. If the file is too large, export a 1080p copy with QuickTime (File → Export As).
 
 ## Screenshots
 
@@ -215,7 +220,7 @@ Apple treats a build as optimized for iPhone Duo when it's made with Xcode 27.1 
 What the app does on iPhone Duo:
 
 - **Inner display:** the app fills the screen. Content stays centered with a maximum width of 800 points, and the tabs run down the right edge.
-- **Short windows:** in landscape on the outer display, the hero shrinks and the player scrolls. The code handles this, but nobody has checked it on the simulator yet.
+- **Landscape:** the hero shrinks, and the player puts its controls beside the orb, so nothing needs a scroll. Checked on the iPhone 18 Pro Max simulator. The Duo's outer display in landscape uses the same layout but hasn't been checked on the simulator yet.
 - **Cold launch while unfolded:** `patches/react-native-screens+4.30.0.patch` makes the tab bar appear. Without it, the tab bar is missing until the device folds or rotates. See the main README.
 - **Not yet tested:** the outer display in landscape, and folding while a meditation plays.
 

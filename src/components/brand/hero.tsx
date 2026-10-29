@@ -30,17 +30,22 @@ export function Hero() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const height = useHeroHeight();
+  const window = useWindowDimensions();
+  // The SVG layers keep their old drawing after a rotation, which leaves a hard-edged block in the hero.
+  // A new key per window size redraws them at the new size.
+  const layerKey = `${window.width}x${window.height}`;
 
   return (
     <View style={[styles.hero, { minHeight: height + insets.top, backgroundColor: theme.heroBackground }]}>
       <Aura
+        key={`aura-${layerKey}`}
         orbs={[
           { id: 'hero-primary', color: theme.auraPrimary, size: 420, x: '82%', y: '18%', period: 8_000 },
           { id: 'hero-secondary', color: theme.auraSecondary, size: 300, x: '8%', y: '62%', period: 11_000 },
         ]}
       />
       {/* Fades the hero into the page so there's no hard edge where the list begins. */}
-      <Svg style={styles.fade} width="100%" height={FADE_HEIGHT} pointerEvents="none">
+      <Svg key={`fade-${layerKey}`} style={styles.fade} width="100%" height={FADE_HEIGHT} pointerEvents="none">
         <Defs>
           <LinearGradient id="hero-fade" x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={theme.background} stopOpacity={0} />

@@ -4,7 +4,6 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
-  useWindowDimensions,
   View,
   type GestureResponderEvent,
   type LayoutChangeEvent,
@@ -23,13 +22,21 @@ import { useTheme } from '@/hooks/use-theme';
 import { formatClock } from '@/lib/time';
 
 const ORB_SIZE = 200;
-/** The orb never takes more than this share of the window's height, so the controls fit in landscape. */
+/** The orb never takes more than this share of the player's height, so the controls fit. */
 const MAX_ORB_SHARE = 0.3;
+/** In two columns the orb shares its column only with the titles, so it can take a little more of the height. */
+const MAX_WIDE_ORB_SHARE = 0.35;
 
 /** Full-screen player for guided meditations. Soundscapes are started and stopped from their tiles. */
 export default function PlayerScreen() {
   const theme = useTheme();
   const { track, isPlaying, position, duration, finished, toggle, stop, seekBy } = usePlayback();
+  // Measured from the player itself, not the window: on an unfolded iPhone Duo the window is landscape
+  // but the player is a narrow sheet.
+  const [frame, setFrame] = useState({ width: 0, height: 0 });
+  // A phone in landscape is too short for one column, so the controls move beside the orb.
+  const wide = frame.width > frame.height && frame.height > 0;
+  const orbSize = Math.min(ORB_SIZE, (frame.height || ORB_SIZE / MAX_ORB_SHARE) * (wide ? MAX_WIDE_ORB_SHARE : MAX_ORB_SHARE));
 
   // Closing the player (the close button, a swipe down or Android back) ends the meditation.
   const endMeditation = useEffectEvent(() => {
@@ -49,6 +56,8 @@ export default function PlayerScreen() {
   return (
     <ThemedView style={styles.container}>
       <Aura
+        // Redraws the glow at the new size after a rotation.
+        key={`${frame.width}x${frame.height}`}
         orbs={[
           { id: 'player-primary', color: theme.auraPrimary, size: 520, x: '50%', y: '30%', period: 9_000 },
           { id: 'player-secondary', color: theme.auraSecondary, size: 360, x: '15%', y: '75%', period: 12_000 },
@@ -56,51 +65,63 @@ export default function PlayerScreen() {
       />
       {/* Pads only the sides that touch a safe area. On an unfolded iPhone Duo the player is a sheet that
           doesn't reach the window's right edge, so the window's insets would push it off-center. */}
-      <SafeAreaView edges={['left', 'right']} style={styles.container}>
-        {/* Scrolls only when the window is too short for everything, such as a phone in landscape. */}
-        <ScrollView contentInsetAdjustmentBehavior="automatic" contentContainerStyle={styles.content}>
-          <BreathingOrb />
+      <SafeAreaView
+        edges={['left', 'right']}
+        style={styles.container}
+        onLayout={(event: LayoutChangeEvent) => {
+          const { width, height } = event.nativeEvent.layout;
+          setFrame({ width, height });
+        }}>
+        {/* Scrolls only when the player is too short for everything. */}
+        <ScrollView
+          contentInsetAdjustmentBehavior="automatic"
+          contentContainerStyle={[styles.content, wide && styles.contentWide]}>
+          <View style={[styles.column, wide && styles.columnWide]}>
+            <BreathingOrb size={orbSize} />
 
-          <View style={styles.titles}>
-            <ThemedText style={styles.title}>{track.title}</ThemedText>
-            <ThemedText themeColor="textSecondary">{track.subtitle}</ThemedText>
-          </View>
-
-          <View style={styles.progress}>
-            <ProgressBar />
-            <View style={styles.times}>
-              <ThemedText type="small" themeColor="textSecondary">
-                {formatClock(position)}
-              </ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                -{formatClock(duration - position)}
-              </ThemedText>
+            <View style={styles.titles}>
+              <ThemedText style={styles.title}>{track.title}</ThemedText>
+              <ThemedText themeColor="textSecondary">{track.subtitle}</ThemedText>
             </View>
           </View>
 
-          {finished ? <ThemedText style={styles.finished}>Session complete. Well done.</ThemedText> : null}
+          <View style={[styles.column, wide && styles.columnWide]}>
+            <View style={styles.progress}>
+              <ProgressBar />
+              <View style={styles.times}>
+                <ThemedText type="small" themeColor="textSecondary">
+                  {formatClock(position)}
+                </ThemedText>
+                <ThemedText type="small" themeColor="textSecondary">
+                  -{formatClock(duration - position)}
+                </ThemedText>
+              </View>
+            </View>
 
-          <View style={styles.controls}>
-            <SkipButton seconds={-SKIP_SECONDS} onPress={() => seekBy(-SKIP_SECONDS)} />
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={isPlaying ? 'Pause' : finished ? 'Play again' : 'Play'}
-              onPress={toggle}
-              style={({ pressed }) => [
-                styles.play,
-                { backgroundColor: theme.tint, transform: [{ scale: pressed ? 0.95 : 1 }] },
-              ]}>
-              <PlayPauseIcon playing={isPlaying} color={theme.onTint} size={34} />
-            </Pressable>
-            <SkipButton seconds={SKIP_SECONDS} onPress={() => seekBy(SKIP_SECONDS)} />
+            {finished ? <ThemedText style={styles.finished}>Session complete. Well done.</ThemedText> : null}
+
+            <View style={styles.controls}>
+              <SkipButton seconds={-SKIP_SECONDS} onPress={() => seekBy(-SKIP_SECONDS)} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={isPlaying ? 'Pause' : finished ? 'Play again' : 'Play'}
+                onPress={toggle}
+                style={({ pressed }) => [
+                  styles.play,
+                  { backgroundColor: theme.tint, transform: [{ scale: pressed ? 0.95 : 1 }] },
+                ]}>
+                <PlayPauseIcon playing={isPlaying} color={theme.onTint} size={34} />
+              </Pressable>
+              <SkipButton seconds={SKIP_SECONDS} onPress={() => seekBy(SKIP_SECONDS)} />
+            </View>
+
+            <Button
+              title="End session"
+              variant="secondary"
+              // Closing the player ends the meditation, so going back is all this needs to do.
+              onPress={() => router.back()}
+            />
           </View>
-
-          <Button
-            title="End session"
-            variant="secondary"
-            // Closing the player ends the meditation, so going back is all this needs to do.
-            onPress={() => router.back()}
-          />
         </ScrollView>
       </SafeAreaView>
     </ThemedView>
@@ -108,10 +129,8 @@ export default function PlayerScreen() {
 }
 
 /** A soft, lit sphere at the center of the player. */
-function BreathingOrb() {
+function BreathingOrb({ size }: { size: number }) {
   const theme = useTheme();
-  const window = useWindowDimensions();
-  const size = Math.min(ORB_SIZE, window.height * MAX_ORB_SHARE);
   const half = size / 2;
   return (
     <View style={styles.orb} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
@@ -198,6 +217,17 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: MaxContentWidth,
     alignSelf: 'center',
+  },
+  contentWide: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.five,
+  },
+  column: {
+    gap: Spacing.four,
+  },
+  columnWide: {
+    flex: 1,
   },
   orb: {
     alignSelf: 'center',
