@@ -120,7 +120,7 @@ Answer **None** or **No** to every content question: violence, sexual content, p
 | Unrestricted web access | No | It only opens its own privacy and support pages. |
 | User-generated content, messaging, advertising | No | |
 
-Expected result: the lowest age rating (4+).
+Result, saved November 2, 2026: 9+ in 172 countries and regions, 12+ in Vietnam, and Korea's "ALL" rating. Devices on operating systems earlier than version 26 show 4+. Answering Yes to Health or Wellness Topics raises the rating from 4+ to 9+. Yes is the honest answer for a meditation app, and guideline 2.3.6 requires honest answers.
 
 **Regulated medical device** (EU, UK, US): **No**.
 
