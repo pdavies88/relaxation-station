@@ -38,7 +38,7 @@ The app links to the privacy policy and support page from its **About** tab, as 
 
 | Field | Value | Limit |
 | --- | --- | --- |
-| Name | Relaxation Station (see the note below) | 30 |
+| Name | Relaxation Station: Sleep (see the note below) | 30 |
 | Subtitle | Meditation & Sounds | 30 |
 | Primary category | Health & Fitness | |
 | Secondary category | Lifestyle | |
@@ -46,7 +46,7 @@ The app links to the privacy policy and support page from its **About** tab, as 
 | Copyright | 2026 Preston Davies | |
 | Price | Free | |
 
-**App name note:** EAS created the App Store Connect record as "Relaxation Station (1d8aeb)". EAS adds a random code when Apple says the plain name is already in use. An unreleased app record can hold a name, and no live app uses "Relaxation Station" (checked November 2, 2026). The home screen name comes from `app.json` and is already "Relaxation Station". Only the App Store listing shows the code. To fix it, edit **App Information → Name** while a version is in "Prepare for Submission". No new build is needed.
+**App name note:** another developer holds "Relaxation Station" and "The Relaxation Station" on the App Store, so App Store Connect refuses both. EAS first created the record as "Relaxation Station (1d8aeb)". On November 2, 2026 it was renamed to "Relaxation Station: Sleep" in **App Information → Name**. The new name goes live with the next approved version. The home screen name comes from `app.json` and stays "Relaxation Station".
 
 ### Promotional text (170 characters)
 
